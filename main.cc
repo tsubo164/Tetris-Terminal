@@ -6,6 +6,13 @@
 enum TileKind {
     E = 0, // empty
     B,     // border
+    I,     // tetromino
+    O,     // tetromino
+    S,     // tetromino
+    Z,     // tetromino
+    J,     // tetromino
+    L,     // tetromino
+    T,     // tetromino
 };
 
 static const int FIELD_WIDTH = 10 + 2;
@@ -35,6 +42,14 @@ static char field[FIELD_HEIGHT][FIELD_WIDTH] =
     {B,0,0,0,0,0,0,0,0,0,0,B},
     {B,0,0,0,0,0,0,0,0,0,0,B},
     {B,B,B,B,B,B,B,B,B,B,B,B},
+};
+
+static char tetromino[4][4] =
+{
+    {0, 0, S, 0},
+    {0, S, S, 0},
+    {0, S, 0, 0},
+    {0, 0, 0, 0},
 };
 
 static void render();
@@ -87,19 +102,37 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static void draw_str(int x, int y, const char *str)
+static void draw_str(int pos_x, int pos_y, const char *str)
 {
-    mvaddstr(y, x, str);
+    mvaddstr(pos_y, pos_x, str);
 }
 
-static int get_tile(int x, int y)
+static int get_tile(int pos_x, int pos_y)
 {
-    return field[y][x];
+    return field[pos_y][pos_x];
+}
+
+static void set_tile(int pos_x, int pos_y, int kind)
+{
+    field[pos_y][pos_x] = kind;
+}
+
+static void draw_tetromino(int pos_x, int pos_y, int kind)
+{
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            const int tile = tetromino[y][x];
+            if (tile)
+                set_tile(pos_x + x, pos_y + y, tile);
+        }
+    }
 }
 
 void render()
 {
     char line[FIELD_WIDTH + 1] = {'\0'};
+
+    draw_tetromino(4, 12, S);
 
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
@@ -109,6 +142,7 @@ void render()
             switch (tile) {
                 case E: ch = ' '; break;
                 case B: ch = 'B'; break;
+                case S: ch = 'S'; break;
                 default: break;
             }
 

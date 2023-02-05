@@ -56,8 +56,10 @@ static char tetromino[4][4] =
 struct Tetromino {
     int kind;
     int x, y;
-} tetro;
+    int rotation;
+} tetro = {0};
 
+static int lookup_tetromino(const Tetromino &tetro, int x, int y);
 static void render();
 
 int main(int argc, char **argv)
@@ -84,7 +86,16 @@ int main(int argc, char **argv)
         // Input
         const int key = getch();
 
+        // Game logic
         switch (key) {
+
+        case 'd':
+            tetro.rotation = (tetro.rotation - 1 + 4) % 4;
+            break;
+
+        case 'f':
+            tetro.rotation = (tetro.rotation + 1) % 4;
+            break;
 
         case 'h':
             tetro.x--;
@@ -110,7 +121,8 @@ int main(int argc, char **argv)
             break;
         }
 
-        clear();
+        // Rednering
+        erase();
 
         render();;
 
@@ -139,6 +151,11 @@ int main(int argc, char **argv)
     return 0;
 }
 
+static void draw_char(int pos_x, int pos_y, char ch)
+{
+    mvaddch(pos_y, pos_x, ch);
+}
+
 static void draw_str(int pos_x, int pos_y, const char *str)
 {
     mvaddstr(pos_y, pos_x, str);
@@ -153,16 +170,17 @@ static void draw_tetromino(const Tetromino &tetro)
 {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            const int tile = tetromino[y][x];
-            char str[2] = {'\0'};
+            //const int tile = tetromino[y][x];
+            const int tile = lookup_tetromino(tetro, x, y);
+            char ch = '\0';
 
             switch (tile) {
-                case B: str[0] = 'B'; break;
-                case S: str[0] = 'S'; break;
-                default: break;
+                case B: ch = 'B'; break;
+                case S: ch = 'S'; break;
+                default: continue;
             }
 
-            draw_str(tetro.x + x, tetro.y + y, str);
+            draw_char(tetro.x + x, tetro.y + y, ch);
         }
     }
 }
@@ -189,4 +207,43 @@ void render()
     }
 
     draw_tetromino(tetro);
+}
+
+static int lookup_tetromino(const Tetromino &tet, int x, int y)
+{
+    struct Coord { int x, y; };
+
+    static const Coord lookup_table[4][4][4] = {
+        {
+            // rot 0
+            {{0, 0}, {1, 0}, {2, 0}, {3, 0}},
+            {{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+            {{0, 2}, {1, 2}, {2, 2}, {3, 2}},
+            {{0, 3}, {1, 3}, {2, 3}, {3, 3}}
+        },
+        {
+            // rot 1
+            {{0, 3}, {0, 2}, {0, 1}, {0, 0}},
+            {{1, 3}, {1, 2}, {1, 1}, {1, 0}},
+            {{2, 3}, {2, 2}, {2, 1}, {2, 0}},
+            {{3, 3}, {3, 2}, {3, 1}, {3, 0}}
+        },
+        {
+            // rot 2
+            {{3, 3}, {2, 3}, {1, 3}, {0, 3}},
+            {{3, 2}, {2, 2}, {1, 2}, {0, 2}},
+            {{3, 1}, {2, 1}, {1, 1}, {0, 1}},
+            {{3, 0}, {2, 0}, {1, 0}, {0, 0}}
+        },
+        {
+            // rot 3
+            {{3, 0}, {3, 1}, {3, 2}, {3, 3}},
+            {{2, 0}, {2, 1}, {2, 2}, {2, 3}},
+            {{1, 0}, {1, 1}, {1, 2}, {1, 3}},
+            {{0, 0}, {0, 1}, {0, 2}, {0, 3}}
+        }
+    };
+
+    const Coord coord = lookup_table[tet.rotation][y][x];
+    return tetromino[coord.y][coord.x];
 }

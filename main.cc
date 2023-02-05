@@ -59,7 +59,9 @@ struct Tetromino {
     int rotation;
 } tetro = {0};
 
-static int lookup_tetromino(const Tetromino &tetro, int x, int y);
+static int rotate(int rot, int dir);
+static int lookup_tetromino(const Tetromino &tet, int u, int v);
+static bool can_fit(const Tetromino &tet);
 static void render();
 
 int main(int argc, char **argv)
@@ -72,7 +74,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    int frame = 0;
+    unsigned long frame = 0;
     double fps = 0.0;
     auto start = std::chrono::steady_clock::now();
 
@@ -87,30 +89,44 @@ int main(int argc, char **argv)
         const int key = getch();
 
         // Game logic
+        Tetromino moved_tetro = tetro;
+
         switch (key) {
 
         case 'd':
-            tetro.rotation = (tetro.rotation - 1 + 4) % 4;
+            moved_tetro.rotation = rotate(tetro.rotation, -1);
+            if (can_fit(moved_tetro))
+                tetro.rotation = moved_tetro.rotation;
             break;
 
         case 'f':
-            tetro.rotation = (tetro.rotation + 1) % 4;
+            moved_tetro.rotation = rotate(tetro.rotation, 1);
+            if (can_fit(moved_tetro))
+                tetro.rotation = moved_tetro.rotation;
             break;
 
         case 'h':
-            tetro.x--;
+            moved_tetro.x--;
+            if (can_fit(moved_tetro))
+                tetro.x--;
             break;
 
         case 'l':
-            tetro.x++;
+            moved_tetro.x++;
+            if (can_fit(moved_tetro))
+                tetro.x++;
             break;
 
         case 'k':
-            tetro.y--;
+            moved_tetro.y--;
+            if (can_fit(moved_tetro))
+                tetro.y--;
             break;
 
         case 'j':
-            tetro.y++;
+            moved_tetro.y++;
+            if (can_fit(moved_tetro))
+                tetro.y++;
             break;
 
         case 'q':
@@ -142,8 +158,10 @@ int main(int argc, char **argv)
 
         // Restart timer
         start = std::chrono::steady_clock::now();
-        fps = 1. / elapsed_sec;
         frame++;
+
+        if (frame % 10 == 0)
+            fps = 1. / elapsed_sec;
     }
 
     endwin();
@@ -151,27 +169,32 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static void draw_char(int pos_x, int pos_y, char ch)
+static void draw_char(int x, int y, char ch)
 {
-    mvaddch(pos_y, pos_x, ch);
+    mvaddch(y, x, ch);
 }
 
-static void draw_str(int pos_x, int pos_y, const char *str)
+static void draw_str(int x, int y, const char *str)
 {
-    mvaddstr(pos_y, pos_x, str);
+    mvaddstr(y, x, str);
 }
 
-static int get_tile(int pos_x, int pos_y)
+static int get_field_tile(int x, int y)
 {
-    return field[pos_y][pos_x];
+    if (x < 0 || x >= FIELD_WIDTH)
+        return B;
+    if (y < 0 || y >= FIELD_HEIGHT)
+        return B;
+
+    return field[y][x];
 }
 
-static void draw_tetromino(const Tetromino &tetro)
+static void draw_tetromino(const Tetromino &tet)
 {
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-            //const int tile = tetromino[y][x];
-            const int tile = lookup_tetromino(tetro, x, y);
+    for (int v = 0; v < 4; v++) {
+        for (int u = 0; u < 4; u++) {
+            //const int tile = tetromino[v][u];
+            const int tile = lookup_tetromino(tet, u, v);
             char ch = '\0';
 
             switch (tile) {
@@ -180,7 +203,7 @@ static void draw_tetromino(const Tetromino &tetro)
                 default: continue;
             }
 
-            draw_char(tetro.x + x, tetro.y + y, ch);
+            draw_char(tet.x + u, tet.y + v, ch);
         }
     }
 }
@@ -191,7 +214,7 @@ void render()
 
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            const int tile = get_tile(x, y);
+            const int tile = get_field_tile(x, y);
             char ch = ' ';
 
             switch (tile) {
@@ -209,9 +232,17 @@ void render()
     draw_tetromino(tetro);
 }
 
-static int lookup_tetromino(const Tetromino &tet, int x, int y)
+static int rotate(int rot, int dir)
 {
-    struct Coord { int x, y; };
+    if (dir != -1 && dir != 1)
+        return rot;
+
+    return (tetro.rotation + dir + 4) % 4;
+}
+
+int lookup_tetromino(const Tetromino &tet, int u, int v)
+{
+    struct Coord { int u, v; };
 
     static const Coord lookup_table[4][4][4] = {
         {
@@ -244,6 +275,27 @@ static int lookup_tetromino(const Tetromino &tet, int x, int y)
         }
     };
 
-    const Coord coord = lookup_table[tet.rotation][y][x];
-    return tetromino[coord.y][coord.x];
+    const Coord coord = lookup_table[tet.rotation][v][u];
+    return tetromino[coord.v][coord.u];
+}
+
+bool can_fit(const Tetromino &tet)
+{
+    for (int v = 0; v < 4; v++) {
+        for (int u = 0; u < 4; u++) {
+            const int tet_tile = lookup_tetromino(tet, u, v);
+
+            if (!tet_tile)
+                continue;
+
+            const int field_x = tet.x + u;
+            const int field_y = tet.y + v;
+            const int field_tile = get_field_tile(field_x, field_y);
+
+            if (field_tile)
+                return false;
+        }
+    }
+
+    return true;
 }

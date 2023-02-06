@@ -113,14 +113,39 @@ static Point rotate(Point point, int rotation)
     if (rotation < 1 || rotation > 4)
         return point;
 
-    Point rotated = point;
+    Point result = point;
 
     for (int i = 0; i < rotation; i++) {
-        const Point tmp = {-rotated.y, rotated.x};
-        rotated = tmp;
+        const Point tmp = {-result.y, result.x};
+        result = tmp;
     }
 
-    return rotated;
+    return result;
+}
+
+static Point translate(Point point, int rotation, int kind)
+{
+    if (rotation < 1 || rotation > 4)
+        return point;
+
+    const Point offsets_i[4] = {{ 0, 0}, { 1,  0}, { 1,  1}, { 0,  1}};
+    const Point offsets_o[4] = {{ 0, 0}, { 0, -1}, { 1, -1}, { 1,  0}};
+    const Point *offsets = nullptr;
+
+    if (kind == I)
+        offsets = offsets_i;
+
+    if (kind == O)
+        offsets = offsets_o;
+
+    Point result = point;
+
+    if (offsets) {
+        result.x += offsets[rotation].x;
+        result.y += offsets[rotation].y;
+    }
+
+    return result;
 }
 
 void init_pattern(int kind, int rotation, Pattern &patt)
@@ -131,9 +156,12 @@ void init_pattern(int kind, int rotation, Pattern &patt)
         for (int x = 0; x < 4; x++) {
             const char cell = tetromino_grid[kind][y][x];
 
-            if (cell)
+            if (cell) {
                 // pattern array index (0, 0) is mapped to Point (-1, -1)
-                patt.loc[loc_index++] = rotate({x-1, y-1}, rotation);
+                Point p = rotate({x - 1, y - 1}, rotation);
+                p = translate(p, rotation, kind);
+                patt.loc[loc_index++] = p;
+            }
 
             if (loc_index == 4)
                 return;

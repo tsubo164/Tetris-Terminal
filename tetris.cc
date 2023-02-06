@@ -80,8 +80,8 @@ static char tetromino_grid[8][4][4] =
     },
 };
 
-struct Pattern {
-    Point loc[4];
+struct RotationState {
+    Point cells[4];
 };
 
 struct Tetromino {
@@ -91,7 +91,7 @@ struct Tetromino {
 };
 
 // 8 tetrominoes x 4 rotations
-static Pattern tetromino_states[8][4] = {};
+static RotationState rotation_states[8][4] = {};
 
 // Game logic data
 static unsigned long frame = 0;
@@ -100,12 +100,12 @@ static int period = 60;
 static Tetromino tetromino;
 static bool debug_mode = false;
 
-static Pattern &get_tetromino_state(int kind, int rotation)
+static RotationState &get_rotaion_state(int kind, int rotation)
 {
     assert(kind >= 0 && kind < B);
     assert(rotation >= 0 && rotation < 4);
 
-    return tetromino_states[kind][rotation];
+    return rotation_states[kind][rotation];
 }
 
 static Point rotate(Point point, int rotation)
@@ -148,31 +148,44 @@ static Point translate(Point point, int rotation, int kind)
     return result;
 }
 
-void init_pattern(int kind, int rotation, Pattern &patt)
+static void init_state(int kind, int rotation, RotationState &state)
 {
-    int loc_index = 0;
+    int cell_index = 0;
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             const char cell = tetromino_grid[kind][y][x];
 
             if (cell) {
-                // pattern array index (0, 0) is mapped to Point (-1, -1)
+                // state array index (0, 0) is mapped to Point (-1, -1)
                 Point p = rotate({x - 1, y - 1}, rotation);
                 p = translate(p, rotation, kind);
-                patt.loc[loc_index++] = p;
+                state.cells[cell_index++] = p;
             }
 
-            if (loc_index == 4)
+            if (cell_index == 4)
                 return;
         }
     }
 };
 
-bool can_fit(const Tetromino &tet)
+static void initialize_rotation_states()
+{
+    // loop over all tetrominoes
+    for (int kind = E; kind < B; kind++)
+    {
+        // loop over 4 rotations
+        for (int rot = 0; rot < 4; rot++) {
+            RotationState &state = get_rotaion_state(kind, rot);
+            init_state(kind, rot, state);
+        }
+    }
+}
+
+static bool can_fit(const Tetromino &tet)
 {
     for (int i = 0; i < 4; i++) {
-        const Point &pos = get_tetromino_state(tet.kind, tet.rotation).loc[i];
+        const Point &pos = get_rotaion_state(tet.kind, tet.rotation).cells[i];
         const int field_x = tet.x + pos.x;
         const int field_y = tet.y + pos.y;
         const int field_cell = GetFieldCellKind(field_x, field_y);
@@ -186,16 +199,7 @@ bool can_fit(const Tetromino &tet)
 
 void PlayGame()
 {
-    // Initialize tetrominoes pattern table
-    // loop over all tetrominoes
-    for (int kind = E; kind < B; kind++)
-    {
-        // loop over 4 rotations
-        for (int rot = 0; rot < 4; rot++) {
-            Pattern &patt = get_tetromino_state(kind, rot);
-            init_pattern(kind, rot, patt);
-        }
-    }
+    initialize_rotation_states();
 
     tetromino = Tetromino();
     tetromino.kind = I;
@@ -273,7 +277,7 @@ Cell GetTetrominoCell(int index)
     Cell cell;
     cell.kind = tetromino.kind;
 
-    const Point local = get_tetromino_state(tetromino.kind, tetromino.rotation).loc[index];
+    const Point local = get_rotaion_state(tetromino.kind, tetromino.rotation).cells[index];
     cell.pos.x = tetromino.x + local.x;
     cell.pos.y = tetromino.y + local.y;
 

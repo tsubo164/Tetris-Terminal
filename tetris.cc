@@ -1,5 +1,6 @@
 #include "tetris.h"
 #include <iostream>
+#include <cassert>
 
 static char field[FIELD_HEIGHT][FIELD_WIDTH] =
 {
@@ -27,7 +28,7 @@ static char field[FIELD_HEIGHT][FIELD_WIDTH] =
     {B,B,B,B,B,B,B,B,B,B,B,B},
 };
 
-static char tetromino[8][4][4] =
+static char tetromino_grid[8][4][4] =
 {
     { // E
         {0, 0, 0, 0},
@@ -90,13 +91,22 @@ struct Tetromino {
 };
 
 // 8 tetrominoes x 4 rotations
-static Pattern tetromino_pattern[8][4] = {};
+static Pattern tetromino_states[8][4] = {};
 
 // Game logic data
 static unsigned long frame = 0;
 static bool is_playing = false;
 static int period = 60;
-static Tetromino tetro;
+static Tetromino tetromino;
+static bool debug_mode = false;
+
+static Pattern &get_tetromino_state(int kind, int rotation)
+{
+    assert(kind >= 0 && kind < B);
+    assert(rotation >= 0 && rotation < 4);
+
+    return tetromino_states[kind][rotation];
+}
 
 static Point rotate(Point point, int rotation)
 {
@@ -119,11 +129,11 @@ void init_pattern(int kind, int rotation, Pattern &patt)
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            const char cell = tetromino[kind][y][x];
+            const char cell = tetromino_grid[kind][y][x];
 
             if (cell)
                 // pattern array index (0, 0) is mapped to Point (-1, -1)
-                patt.loc[loc_index++] = rotate(Point(x-1, y-1), rotation);
+                patt.loc[loc_index++] = rotate({x-1, y-1}, rotation);
 
             if (loc_index == 4)
                 return;
@@ -134,7 +144,7 @@ void init_pattern(int kind, int rotation, Pattern &patt)
 bool can_fit(const Tetromino &tet)
 {
     for (int i = 0; i < 4; i++) {
-        const Point &pos = tetromino_pattern[tet.kind][tet.rotation].loc[i];
+        const Point &pos = get_tetromino_state(tet.kind, tet.rotation).loc[i];
         const int field_x = tet.x + pos.x;
         const int field_y = tet.y + pos.y;
         const int field_cell = GetFieldCellKind(field_x, field_y);
@@ -154,21 +164,17 @@ void PlayGame()
     {
         // loop over 4 rotations
         for (int rot = 0; rot < 4; rot++) {
-            Pattern &patt = tetromino_pattern[kind][rot];
-
+            Pattern &patt = get_tetromino_state(kind, rot);
             init_pattern(kind, rot, patt);
-
-            printf("rot %d =================\n", rot);
-            for (int j = 0; j < 4; j++) {
-                printf("(%d, %d)\n", patt.loc[j].x, patt.loc[j].y);
-            }
         }
     }
 
-    tetro.kind = Z;
-    tetro.x = 5;
-    tetro.y = 0;
+    tetromino = Tetromino();
+    tetromino.kind = L;
+    tetromino.x = 5;
+    tetromino.y = 0;
 
+    frame = 1;
     is_playing = true;
 }
 
@@ -184,47 +190,51 @@ bool IsPlaying()
 
 void MoveTetromino(int action)
 {
-    Tetromino moved_tetro = tetro;
+    Tetromino moved_tetro = tetromino;
 
     if (action & MOV_LEFT) {
         moved_tetro.x--;
         if (can_fit(moved_tetro))
-            tetro.x--;
+            tetromino.x--;
     }
     if (action & MOV_RIGHT) {
         moved_tetro.x++;
         if (can_fit(moved_tetro))
-            tetro.x++;
+            tetromino.x++;
     }
     if (action & MOV_UP) {
-        moved_tetro.y--;
-        if (can_fit(moved_tetro))
-            tetro.y--;
+        if (debug_mode) {
+            moved_tetro.y--;
+            if (can_fit(moved_tetro))
+                tetromino.y--;
+        }
     }
     if (action & MOV_DOWN) {
         moved_tetro.y++;
         if (can_fit(moved_tetro))
-            tetro.y++;
+            tetromino.y++;
     }
     if (action & ROT_LEFT) {
-        moved_tetro.rotation = (tetro.rotation - 1 + 4) % 4;
+        moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
         if (can_fit(moved_tetro))
-            tetro.rotation = moved_tetro.rotation;
+            tetromino.rotation = moved_tetro.rotation;
     }
     if (action & ROT_RIGHT) {
-        moved_tetro.rotation = (tetro.rotation + 1) % 4;
+        moved_tetro.rotation = (tetromino.rotation + 1) % 4;
         if (can_fit(moved_tetro))
-            tetro.rotation = moved_tetro.rotation;
+            tetromino.rotation = moved_tetro.rotation;
     }
 }
 
 void UpdateFrame()
 {
     if (frame % period == 0) {
-        Tetromino moved_tetro = tetro;
-        moved_tetro.y++;
-        if (can_fit(moved_tetro))
-            tetro.y++;
+        if (!debug_mode) {
+            Tetromino moved_tetro = tetromino;
+            moved_tetro.y++;
+            if (can_fit(moved_tetro))
+                tetromino.y++;
+        }
     }
 
     frame++;
@@ -233,11 +243,11 @@ void UpdateFrame()
 Cell GetTetrominoCell(int index)
 {
     Cell cell;
-    cell.kind = tetro.kind;
+    cell.kind = tetromino.kind;
 
-    const Point local = tetromino_pattern[tetro.kind][tetro.rotation].loc[index];
-    cell.pos.x = tetro.x + local.x; 
-    cell.pos.y = tetro.y + local.y; 
+    const Point local = get_tetromino_state(tetromino.kind, tetromino.rotation).loc[index];
+    cell.pos.x = tetromino.x + local.x;
+    cell.pos.y = tetromino.y + local.y;
 
     return cell;
 }
@@ -250,4 +260,9 @@ int GetFieldCellKind(int x, int y)
         return B;
 
     return field[y][x];
+}
+
+void SetDebugMode()
+{
+    debug_mode = true;
 }

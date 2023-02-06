@@ -20,9 +20,7 @@ enum TetrominoAction {
 };
 
 struct Point {
-    Point() : x(0), y(0) {}
-    Point(int xx, int yy) : x(xx), y(yy) {}
-    int x, y;
+    int x = 0, y = 0;
 };
 
 struct Cell {
@@ -39,5 +37,7 @@ void UpdateFrame();
 
 Cell GetTetrominoCell(int index);
 int GetFieldCellKind(int x, int y);
+
+void SetDebugMode();
 
 #endif

@@ -1,25 +1,38 @@
+#include "tetris.h"
+
 #include <ncurses.h>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
 
-#include "tetris.h"
-
+static int initialize_screen();
+static void finalize_screen();
+static void input_key();
 static void render();
+
+// Counters
+static double fps = 0.0;
+static unsigned long frame = 0;
 
 int main(int argc, char **argv)
 {
-    initscr();
-    cbreak();
-    noecho();
-
-    if (nodelay(stdscr, 1) == ERR) {
-        return 1;
+    // Arguments
+    if (argc == 2) {
+        if (!strcmp(argv[1], "-d")) {
+            SetDebugMode();
+        }
+        else {
+            fprintf(stderr, "error: unknown option: %s\n", argv[1]);
+            return 1;
+        }
     }
 
-    unsigned long frame = 0;
-    double fps = 0.0;
+    // Screen
+    if (initialize_screen())
+        return 1;
+
+    // Timer
     auto start = std::chrono::steady_clock::now();
 
     PlayGame();
@@ -27,32 +40,13 @@ int main(int argc, char **argv)
     while (IsPlaying()) {
 
         // Input
-        const int key = getch();
-
-        switch (key) {
-        case 'd': MoveTetromino(ROT_LEFT); break;
-        case 'f': MoveTetromino(ROT_RIGHT); break;
-        case 'h': MoveTetromino(MOV_LEFT); break;
-        case 'l': MoveTetromino(MOV_RIGHT); break;
-        case 'k': MoveTetromino(MOV_UP); break;
-        case 'j': MoveTetromino(MOV_DOWN); break;
-        case 'q': QuitGame(); break;
-        default: break;
-        }
+        input_key();
 
         // Game logic
         UpdateFrame();
 
         // Rednering
-        erase();
-
         render();;
-
-        const std::string fpsstr = "fps: " + std::to_string(fps);
-        mvaddstr(10, 20, fpsstr.c_str());
-        mvaddstr(11, 20, "Press 'Q' to quit");
-
-        refresh();
 
         // Measure frame cost
         const std::chrono::duration<double> dur = std::chrono::steady_clock::now() - start;
@@ -70,7 +64,8 @@ int main(int argc, char **argv)
             fps = 1. / elapsed_sec;
     }
 
-    endwin();
+    // Clean up
+    finalize_screen();
 
     return 0;
 }
@@ -110,7 +105,7 @@ static void draw_tetromino()
     }
 }
 
-void render()
+static void draw_background()
 {
     char line[FIELD_WIDTH + 1] = {'\0'};
 
@@ -121,6 +116,66 @@ void render()
         }
         draw_str(0, y, line);
     }
+}
 
+static void draw_info()
+{
+    const std::string fpsstr = "fps: " + std::to_string(fps);
+    draw_str(20, 10, fpsstr.c_str());
+    draw_str(20, 11, "Press 'Q' to quit");
+}
+
+void render()
+{
+    erase();
+
+    draw_background();
     draw_tetromino();
+    draw_info();
+
+    refresh();
+}
+
+static int initialize_screen()
+{
+    initscr();
+    cbreak();
+    noecho();
+
+    if (nodelay(stdscr, 1) == ERR) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static void finalize_screen()
+{
+    endwin();
+}
+
+static void input_key()
+{
+    const int key = getch();
+
+    switch (key) {
+    case 'd': MoveTetromino(ROT_LEFT); break;
+    case 'f': MoveTetromino(ROT_RIGHT); break;
+    case 'h': MoveTetromino(MOV_LEFT); break;
+    case 'l': MoveTetromino(MOV_RIGHT); break;
+    case 'k': MoveTetromino(MOV_UP); break;
+    case 'j': MoveTetromino(MOV_DOWN); break;
+
+    case 'r':
+        frame = 0;
+        PlayGame();
+        break;
+
+    case 'q':
+        QuitGame();
+        break;
+
+    default:
+        break;
+    }
 }

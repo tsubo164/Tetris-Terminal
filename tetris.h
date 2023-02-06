@@ -39,5 +39,7 @@ Cell GetTetrominoCell(int index);
 int GetFieldCellKind(int x, int y);
 
 void SetDebugMode();
+bool IsDebugMode();
+void ChangeTetrominoKind(int kind);
 
 #endif

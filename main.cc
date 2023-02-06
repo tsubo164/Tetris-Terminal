@@ -96,25 +96,32 @@ static char get_cell_symbol(int cell)
     }
 }
 
+static void draw_cell(int kind, int x, int y)
+{
+    if (kind == E)
+        return;
+
+    const char sym = get_cell_symbol(kind);
+    attrset(COLOR_PAIR(kind));
+    draw_char(x, y, sym);
+    attrset(0);
+}
+
 static void draw_tetromino()
 {
     for (int i = 0; i < 4; i++) {
         const Cell cell = GetTetrominoCell(i);
-        const char sym = get_cell_symbol(cell.kind);
-        draw_char(cell.pos.x, cell.pos.y, sym);
+        draw_cell(cell.kind, cell.pos.x, cell.pos.y);
     }
 }
 
-static void draw_background()
+static void draw_field()
 {
-    char line[FIELD_WIDTH + 1] = {'\0'};
-
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = GetFieldCellKind(x, y);
-            line[x] = get_cell_symbol(kind);
+            draw_cell(kind, x, y);
         }
-        draw_str(0, y, line);
     }
 }
 
@@ -129,11 +136,34 @@ void render()
 {
     erase();
 
-    draw_background();
+    draw_field();
     draw_tetromino();
     draw_info();
 
     refresh();
+}
+
+static void assign_color(int pair_id, int r, int g, int b)
+{
+    static int color_id = 10;
+
+    init_color(color_id, r, g, b);
+    init_pair(pair_id, color_id, COLOR_BLACK);
+
+    color_id++;
+}
+
+static void initialize_colors()
+{
+    start_color();
+    assign_color(I, 0, 1000, 1000);
+    assign_color(O, 1000, 1000, 0);
+    assign_color(S, 0, 1000, 0);
+    assign_color(Z, 1000, 0, 0);
+    assign_color(J, 0, 0, 1000);
+    assign_color(L, 1000, 500, 0);
+    assign_color(T, 1000, 0, 500);
+    assign_color(B, 800, 800, 800);
 }
 
 static int initialize_screen()
@@ -145,6 +175,8 @@ static int initialize_screen()
     if (nodelay(stdscr, 1) == ERR) {
         return 1;
     }
+
+    initialize_colors();
 
     return 0;
 }
@@ -165,6 +197,10 @@ static void input_key()
     case 'l': MoveTetromino(MOV_RIGHT); break;
     case 'k': MoveTetromino(MOV_UP); break;
     case 'j': MoveTetromino(MOV_DOWN); break;
+
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+        ChangeTetrominoKind(key - '1' + 1);
+        break;
 
     case 'r':
         frame = 0;

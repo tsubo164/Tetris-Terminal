@@ -170,7 +170,7 @@ void PlayGame()
     }
 
     tetromino = Tetromino();
-    tetromino.kind = L;
+    tetromino.kind = I;
     tetromino.x = 5;
     tetromino.y = 0;
 
@@ -203,7 +203,7 @@ void MoveTetromino(int action)
             tetromino.x++;
     }
     if (action & MOV_UP) {
-        if (debug_mode) {
+        if (IsDebugMode()) {
             moved_tetro.y--;
             if (can_fit(moved_tetro))
                 tetromino.y--;
@@ -229,7 +229,7 @@ void MoveTetromino(int action)
 void UpdateFrame()
 {
     if (frame % period == 0) {
-        if (!debug_mode) {
+        if (!IsDebugMode()) {
             Tetromino moved_tetro = tetromino;
             moved_tetro.y++;
             if (can_fit(moved_tetro))
@@ -265,4 +265,20 @@ int GetFieldCellKind(int x, int y)
 void SetDebugMode()
 {
     debug_mode = true;
+}
+
+bool IsDebugMode()
+{
+    return debug_mode;
+}
+
+void ChangeTetrominoKind(int kind)
+{
+    if (!IsDebugMode())
+        return;
+
+    if (kind <= E || kind >= B)
+        return;
+
+    tetromino.kind = kind;
 }

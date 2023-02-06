@@ -6,14 +6,14 @@
 
 enum TileKind {
     E = 0, // empty
-    I,     // tetromino
-    O,     // tetromino
-    S,     // tetromino
-    Z,     // tetromino
-    J,     // tetromino
-    L,     // tetromino
-    T,     // tetromino
-    B,     // border
+    I,
+    O,
+    S,
+    Z,
+    J,
+    L,
+    T,
+    B, // border
 };
 
 static constexpr int FIELD_WIDTH = 10 + 2;
@@ -54,47 +54,57 @@ static char tetromino[8][4][4] =
         {0, 0, 0, 0},
     },
     { // I
-        {0, I, 0, 0},
-        {0, I, 0, 0},
-        {0, I, 0, 0},
-        {0, I, 0, 0},
+        {0, 0, 0, 0},
+        {I, I, I, I},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
     },
     { // O
+        {0, O, O, 0},
+        {0, O, O, 0},
         {0, 0, 0, 0},
-        {0, O, O, 0},
-        {0, O, O, 0},
         {0, 0, 0, 0},
     },
     { // S
-        {0, S, 0, 0},
         {0, S, S, 0},
-        {0, 0, S, 0},
+        {S, S, 0, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0},
     },
     { // Z
-        {0, 0, Z, 0},
+        {Z, Z, 0, 0},
         {0, Z, Z, 0},
-        {0, Z, 0, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0},
     },
     { // J
-        {0, 0, J, 0},
-        {0, 0, J, 0},
-        {0, J, J, 0},
+        {J, 0, 0, 0},
+        {J, J, J, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0},
     },
     { // L
-        {0, L, 0, 0},
-        {0, L, 0, 0},
-        {0, L, L, 0},
+        {0, 0, L, 0},
+        {L, L, L, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0},
     },
     { // T
+        {0, T, 0, 0},
+        {T, T, T, 0},
         {0, 0, 0, 0},
-        {0, T, T, T},
-        {0, 0, T, 0},
         {0, 0, 0, 0},
     },
+};
+
+struct Point {
+    Point() : x(0), y(0) {}
+    Point(int xx, int yy) : x(xx), y(yy) {}
+    int x, y;
+};
+
+struct Pattern {
+    Point loc[4];
 };
 
 struct Tetromino {
@@ -103,13 +113,35 @@ struct Tetromino {
     int rotation;
 } tetro = {0};
 
+// 8 tetrominoes x 4 rotations
+static Pattern tetromino_pattern[8][4] = {};
+
+static void init_pattern(int kind, int rotation, Pattern &patt);
 static int rotate(int rot, int dir);
-static int lookup_tetromino(const Tetromino &tet, int u, int v);
 static bool can_fit(const Tetromino &tet);
 static void render();
 
 int main(int argc, char **argv)
 {
+    // Initialize tetrominoes pattern table
+    {
+        // loop over all tetrominoes
+        for (int kind = E; kind < B; kind++)
+        {
+            // loop over 4 rotations
+            for (int rot = 0; rot < 4; rot++) {
+                Pattern &patt = tetromino_pattern[kind][rot];
+
+                init_pattern(kind, rot, patt);
+
+                printf("rot %d =================\n", rot);
+                for (int j = 0; j < 4; j++) {
+                    printf("(%d, %d)\n", patt.loc[j].x, patt.loc[j].y);
+                }
+            }
+        }
+    }
+
     initscr();
     cbreak();
     noecho();
@@ -122,8 +154,8 @@ int main(int argc, char **argv)
     double fps = 0.0;
     auto start = std::chrono::steady_clock::now();
 
-    tetro.kind = T;
-    tetro.x = 4;
+    tetro.kind = Z;
+    tetro.x = 5;
     tetro.y = 0;
 
     bool is_playing = true;
@@ -184,10 +216,12 @@ int main(int argc, char **argv)
         }
 
         if (frame % period == 0) {
+            /*
             moved_tetro = tetro;
             moved_tetro.y++;
             if (can_fit(moved_tetro))
                 tetro.y++;
+            */
         }
 
         // Rednering
@@ -260,15 +294,10 @@ static char get_tile_symbol(int tile)
 
 static void draw_tetromino(const Tetromino &tet)
 {
-    for (int v = 0; v < 4; v++) {
-        for (int u = 0; u < 4; u++) {
-            const int tile = lookup_tetromino(tet, u, v);
-            if (!tile)
-                continue;
-
-            const char sym = get_tile_symbol(tile);
-            draw_char(tet.x + u, tet.y + v, sym);
-        }
+    for (int i = 0; i < 4; i++) {
+        const Point &pos = tetromino_pattern[tet.kind][tet.rotation].loc[i];
+        const char sym = get_tile_symbol(tet.kind);
+        draw_char(tet.x + pos.x, tet.y + pos.y, sym);
     }
 }
 
@@ -287,6 +316,39 @@ void render()
     draw_tetromino(tetro);
 }
 
+static Point rotate(Point point, int rotation)
+{
+    if (rotation < 1 || rotation > 4)
+        return point;
+
+    Point rotated = point;
+
+    for (int i = 0; i < rotation; i++) {
+        const Point tmp = {-rotated.y, rotated.x};
+        rotated = tmp;
+    }
+
+    return rotated;
+}
+
+void init_pattern(int kind, int rotation, Pattern &patt)
+{
+    int loc_index = 0;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            const char tile = tetromino[kind][y][x];
+
+            if (tile)
+                // pattern array index (0, 0) is mapped to Point (-1, -1)
+                patt.loc[loc_index++] = rotate(Point(x-1, y-1), rotation);
+
+            if (loc_index == 4)
+                return;
+        }
+    }
+};
+
 static int rotate(int rot, int dir)
 {
     if (dir != -1 && dir != 1)
@@ -295,57 +357,16 @@ static int rotate(int rot, int dir)
     return (tetro.rotation + dir + 4) % 4;
 }
 
-int lookup_tetromino(const Tetromino &tet, int u, int v)
-{
-    struct Coord { int u, v; };
-
-    static const Coord lookup_table[4][4][4] = {
-        { // rot 0
-            {{0, 0}, {1, 0}, {2, 0}, {3, 0}},
-            {{0, 1}, {1, 1}, {2, 1}, {3, 1}},
-            {{0, 2}, {1, 2}, {2, 2}, {3, 2}},
-            {{0, 3}, {1, 3}, {2, 3}, {3, 3}}
-        },
-        { // rot 1
-            {{0, 3}, {0, 2}, {0, 1}, {0, 0}},
-            {{1, 3}, {1, 2}, {1, 1}, {1, 0}},
-            {{2, 3}, {2, 2}, {2, 1}, {2, 0}},
-            {{3, 3}, {3, 2}, {3, 1}, {3, 0}}
-        },
-        { // rot 2
-            {{3, 3}, {2, 3}, {1, 3}, {0, 3}},
-            {{3, 2}, {2, 2}, {1, 2}, {0, 2}},
-            {{3, 1}, {2, 1}, {1, 1}, {0, 1}},
-            {{3, 0}, {2, 0}, {1, 0}, {0, 0}}
-        },
-        { // rot 3
-            {{3, 0}, {3, 1}, {3, 2}, {3, 3}},
-            {{2, 0}, {2, 1}, {2, 2}, {2, 3}},
-            {{1, 0}, {1, 1}, {1, 2}, {1, 3}},
-            {{0, 0}, {0, 1}, {0, 2}, {0, 3}}
-        }
-    };
-
-    const Coord coord = lookup_table[tet.rotation][v][u];
-    return tetromino[tet.kind][coord.v][coord.u];
-}
-
 bool can_fit(const Tetromino &tet)
 {
-    for (int v = 0; v < 4; v++) {
-        for (int u = 0; u < 4; u++) {
-            const int tet_tile = lookup_tetromino(tet, u, v);
+    for (int i = 0; i < 4; i++) {
+        const Point &pos = tetromino_pattern[tet.kind][tet.rotation].loc[i];
+        const int field_x = tet.x + pos.x;
+        const int field_y = tet.y + pos.y;
+        const int field_tile = get_field_tile(field_x, field_y);
 
-            if (!tet_tile)
-                continue;
-
-            const int field_x = tet.x + u;
-            const int field_y = tet.y + v;
-            const int field_tile = get_field_tile(field_x, field_y);
-
-            if (field_tile)
-                return false;
-        }
+        if (field_tile)
+            return false;
     }
 
     return true;

@@ -143,24 +143,33 @@ void render()
     refresh();
 }
 
+static const int DEFAULT_FG_COLOR = 10;
+static const int DEFAULT_BG_COLOR = 11;
+
 static void assign_color(int pair_id, int r, int g, int b)
 {
-    static int color_id = 10;
+    static int fg_color = DEFAULT_BG_COLOR + 1;
 
-    init_color(color_id, r, g, b);
-    init_pair(pair_id, color_id, COLOR_BLACK);
+    init_color(fg_color, r, g, b);
+    init_pair(pair_id, fg_color, DEFAULT_BG_COLOR);
 
-    color_id++;
+    fg_color++;
 }
 
 static void initialize_colors()
 {
     start_color();
+
+    init_color(DEFAULT_BG_COLOR, 160, 160, 160);
+    init_color(DEFAULT_FG_COLOR, 1000, 1000, 1000);
+    init_pair(B + 1, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+    bkgd(COLOR_PAIR(B + 1));
+
     assign_color(I, 0, 1000, 1000);
     assign_color(O, 1000, 1000, 0);
     assign_color(S, 0, 1000, 0);
     assign_color(Z, 1000, 0, 0);
-    assign_color(J, 0, 0, 1000);
+    assign_color(J, 100, 300, 1000);
     assign_color(L, 1000, 500, 0);
     assign_color(T, 1000, 0, 500);
     assign_color(B, 800, 800, 800);

@@ -121,7 +121,7 @@ static void draw_field()
 {
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            const int kind = GetFieldCellKind(x, y);
+            const int kind = GetFieldCellKind(Point(x, y));
             draw_cell(kind, x, y);
         }
     }

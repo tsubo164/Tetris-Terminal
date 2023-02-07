@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cassert>
 
-static char field[FIELD_HEIGHT][FIELD_WIDTH] =
+static char field_grid[FIELD_HEIGHT][FIELD_WIDTH] =
 {
     {B,B,B,0,0,0,0,0,0,B,B,B},
     {B,0,0,0,0,0,0,0,0,0,0,B},
@@ -86,8 +86,8 @@ struct RotationState {
 
 struct Tetromino {
     int kind;
-    int x, y;
     int rotation;
+    Point pos;
 };
 
 // 8 tetrominoes x 4 rotations
@@ -132,15 +132,11 @@ static void init_state(int kind, int rotation, RotationState &state)
             const char cell = tetromino_grid[kind][y][x];
 
             if (cell) {
-                // state array index (0, 0) is mapped to Point (-1, 1)
-                const Point p_center = {1, 2};
-                Point p_screen = {x, 4 - y - 1};
+                // local = grid(x, invert(y)) - center
+                Point local = Point(x, 4 - y - 1) - Point(1, 2);
+                local = rotate(local, rotation);
 
-                p_screen.x -= p_center.x;
-                p_screen.y -= p_center.y;
-
-                p_screen = rotate(p_screen, rotation);
-                state.cells[cell_index++] = p_screen;
+                state.cells[cell_index++] = local;
             }
 
             if (cell_index == 4)
@@ -165,10 +161,9 @@ static void initialize_rotation_states()
 static bool can_fit(const Tetromino &tet)
 {
     for (int i = 0; i < 4; i++) {
-        const Point &pos = get_rotaion_state(tet.kind, tet.rotation).cells[i];
-        const int field_x = tet.x + pos.x;
-        const int field_y = tet.y + pos.y;
-        const int field_cell = GetFieldCellKind(field_x, field_y);
+        const Point local = get_rotaion_state(tet.kind, tet.rotation).cells[i];
+        const Point field = tet.pos + local;
+        const int field_cell = GetFieldCellKind(field);
 
         if (field_cell)
             return false;
@@ -224,12 +219,10 @@ static bool kick_wall(Tetromino &tet, int old_rotation)
         const Point offset1 = offsets1[i];
 
         Tetromino test = tet;
-        test.x += offset0.x - offset1.x;
-        test.y += offset0.y - offset1.y;
+        test.pos += offset0 - offset1;
 
         if (can_fit(test)) {
-            tet.x = test.x;
-            tet.y = test.y;
+            tet.pos = test.pos;
             return true;
         }
     }
@@ -242,8 +235,7 @@ void PlayGame()
 
     tetromino = Tetromino();
     tetromino.kind = I;
-    tetromino.x = 5;
-    tetromino.y = 21;
+    tetromino.pos = {5, 21};
 
     frame = 1;
     is_playing = true;
@@ -264,41 +256,39 @@ void MoveTetromino(int action)
     Tetromino moved_tetro = tetromino;
 
     if (action & MOV_LEFT) {
-        moved_tetro.x--;
+        moved_tetro.pos.x--;
         if (can_fit(moved_tetro))
-            tetromino.x--;
+            tetromino.pos.x--;
     }
     if (action & MOV_RIGHT) {
-        moved_tetro.x++;
+        moved_tetro.pos.x++;
         if (can_fit(moved_tetro))
-            tetromino.x++;
+            tetromino.pos.x++;
     }
     if (action & MOV_UP) {
         if (IsDebugMode()) {
-            moved_tetro.y++;
+            moved_tetro.pos.y++;
             if (can_fit(moved_tetro))
-                tetromino.y++;
+                tetromino.pos.y++;
         }
     }
     if (action & MOV_DOWN) {
-        moved_tetro.y--;
+        moved_tetro.pos.y--;
         if (can_fit(moved_tetro))
-            tetromino.y--;
+            tetromino.pos.y--;
     }
     if (action & ROT_LEFT) {
         moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
         if (kick_wall(moved_tetro, tetromino.rotation)) {
             tetromino.rotation = moved_tetro.rotation;
-            tetromino.x = moved_tetro.x;
-            tetromino.y = moved_tetro.y;
+            tetromino.pos = moved_tetro.pos;
         }
     }
     if (action & ROT_RIGHT) {
         moved_tetro.rotation = (tetromino.rotation + 1) % 4;
         if (kick_wall(moved_tetro, tetromino.rotation)) {
             tetromino.rotation = moved_tetro.rotation;
-            tetromino.x = moved_tetro.x;
-            tetromino.y = moved_tetro.y;
+            tetromino.pos = moved_tetro.pos;
         }
     }
 }
@@ -308,9 +298,9 @@ void UpdateFrame()
     if (frame % period == 0) {
         if (!IsDebugMode()) {
             Tetromino moved_tetro = tetromino;
-            moved_tetro.y--;
+            moved_tetro.pos.y--;
             if (can_fit(moved_tetro))
-                tetromino.y--;
+                tetromino.pos.y--;
         }
     }
 
@@ -319,24 +309,23 @@ void UpdateFrame()
 
 Cell GetTetrominoCell(int index)
 {
+    const Point local = get_rotaion_state(tetromino.kind, tetromino.rotation).cells[index];
+
     Cell cell;
     cell.kind = tetromino.kind;
-
-    const Point local = get_rotaion_state(tetromino.kind, tetromino.rotation).cells[index];
-    cell.pos.x = tetromino.x + local.x;
-    cell.pos.y = tetromino.y + local.y;
+    cell.pos = tetromino.pos + local;
 
     return cell;
 }
 
-int GetFieldCellKind(int x, int y)
+int GetFieldCellKind(Point field)
 {
-    if (x < 0 || x >= FIELD_WIDTH)
+    if (field.x < 0 || field.x >= FIELD_WIDTH)
         return B;
-    if (y < 0 || y >= FIELD_HEIGHT)
+    if (field.y < 0 || field.y >= FIELD_HEIGHT)
         return B;
 
-    return field[FIELD_HEIGHT - y - 1][x];
+    return field_grid[FIELD_HEIGHT - field.y - 1][field.x];
 }
 
 void SetDebugMode()

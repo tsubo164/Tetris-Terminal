@@ -1,6 +1,8 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
+#include "point.h"
+
 constexpr int FIELD_WIDTH = 10 + 2;
 constexpr int FIELD_HEIGHT = 20 + 2;
 
@@ -19,10 +21,6 @@ enum TetrominoAction {
     ROT_LEFT  = 1 << 5,
 };
 
-struct Point {
-    int x = 0, y = 0;
-};
-
 struct Cell {
     int kind = 0;
     Point pos;
@@ -36,7 +34,7 @@ void MoveTetromino(int action);
 void UpdateFrame();
 
 Cell GetTetrominoCell(int index);
-int GetFieldCellKind(int x, int y);
+int GetFieldCellKind(Point field);
 
 void SetDebugMode();
 bool IsDebugMode();

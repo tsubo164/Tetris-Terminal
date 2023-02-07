@@ -11,6 +11,8 @@ static void finalize_screen();
 static void input_key();
 static void render();
 
+static const int SCREEN_HEIGHT = FIELD_HEIGHT;
+
 // Counters
 static double fps = 0.0;
 static unsigned long frame = 0;
@@ -72,12 +74,12 @@ int main(int argc, char **argv)
 
 static void draw_char(int x, int y, char ch)
 {
-    mvaddch(y, x, ch);
+    mvaddch(SCREEN_HEIGHT - y - 1, x, ch);
 }
 
 static void draw_str(int x, int y, const char *str)
 {
-    mvaddstr(y, x, str);
+    mvaddstr(SCREEN_HEIGHT - y - 1, x, str);
 }
 
 static char get_cell_symbol(int cell)
@@ -128,8 +130,8 @@ static void draw_field()
 static void draw_info()
 {
     const std::string fpsstr = "fps: " + std::to_string(fps);
-    draw_str(20, 10, fpsstr.c_str());
-    draw_str(20, 11, "Press 'Q' to quit");
+    draw_str(20, 11, fpsstr.c_str());
+    draw_str(20, 10, "Press 'Q' to quit");
 }
 
 void render()

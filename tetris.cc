@@ -116,7 +116,7 @@ static Point rotate(Point point, int rotation)
     Point result = point;
 
     for (int i = 0; i < rotation; i++) {
-        const Point tmp = {-result.y, result.x};
+        const Point tmp = {result.y, -result.x};
         result = tmp;
     }
 
@@ -132,9 +132,15 @@ static void init_state(int kind, int rotation, RotationState &state)
             const char cell = tetromino_grid[kind][y][x];
 
             if (cell) {
-                // state array index (0, 0) is mapped to Point (-1, -1)
-                Point p = rotate({x - 1, y - 1}, rotation);
-                state.cells[cell_index++] = p;
+                // state array index (0, 0) is mapped to Point (-1, 1)
+                const Point p_center = {1, 2};
+                Point p_screen = {x, 4 - y - 1};
+
+                p_screen.x -= p_center.x;
+                p_screen.y -= p_center.y;
+
+                p_screen = rotate(p_screen, rotation);
+                state.cells[cell_index++] = p_screen;
             }
 
             if (cell_index == 4)
@@ -171,25 +177,24 @@ static bool can_fit(const Tetromino &tet)
     return true;
 }
 
-// TTC offset data is based on Y up. So Y values in this table
-// have been nagated from their's
+// TTC's super rotation system.
 // https://tetris.wiki/Super_Rotation_System
 static const Point offset_table_jlstz [4][5] = {
     {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0, 0}, {+1, 0}, {+1,+1}, { 0,-2}, {+1,-2}},
+    {{ 0, 0}, {+1, 0}, {+1,-1}, { 0,+2}, {+1,+2}},
     {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0, 0}, {-1, 0}, {-1,+1}, { 0,-2}, {-1,-2}},
+    {{ 0, 0}, {-1, 0}, {-1,-1}, { 0,+2}, {-1,+2}},
 };
 static const Point offset_table_i [4][5] = {
     {{ 0, 0}, {-1, 0}, {+2, 0}, {-1, 0}, {+2, 0}},
-    {{-1, 0}, { 0, 0}, { 0, 0}, { 0,-1}, { 0,+2}},
-    {{-1,-1}, {+1,-1}, {-2,-1}, {+1, 0}, {-2, 0}},
-    {{ 0,-1}, { 0,-1}, { 0,-1}, { 0,+1}, { 0,-2}},
+    {{-1, 0}, { 0, 0}, { 0, 0}, { 0,+1}, { 0,-2}},
+    {{-1,+1}, {+1,+1}, {-2,+1}, {+1, 0}, {-2, 0}},
+    {{ 0,+1}, { 0,+1}, { 0,+1}, { 0,-1}, { 0,+2}},
 };
 static const Point offset_table_o [4][5] = {
     {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0,+1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{-1,+1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{ 0,-1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{-1,-1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
     {{-1, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
 };
 
@@ -238,7 +243,7 @@ void PlayGame()
     tetromino = Tetromino();
     tetromino.kind = I;
     tetromino.x = 5;
-    tetromino.y = 0;
+    tetromino.y = 21;
 
     frame = 1;
     is_playing = true;
@@ -270,15 +275,15 @@ void MoveTetromino(int action)
     }
     if (action & MOV_UP) {
         if (IsDebugMode()) {
-            moved_tetro.y--;
+            moved_tetro.y++;
             if (can_fit(moved_tetro))
-                tetromino.y--;
+                tetromino.y++;
         }
     }
     if (action & MOV_DOWN) {
-        moved_tetro.y++;
+        moved_tetro.y--;
         if (can_fit(moved_tetro))
-            tetromino.y++;
+            tetromino.y--;
     }
     if (action & ROT_LEFT) {
         moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
@@ -303,9 +308,9 @@ void UpdateFrame()
     if (frame % period == 0) {
         if (!IsDebugMode()) {
             Tetromino moved_tetro = tetromino;
-            moved_tetro.y++;
+            moved_tetro.y--;
             if (can_fit(moved_tetro))
-                tetromino.y++;
+                tetromino.y--;
         }
     }
 
@@ -331,7 +336,7 @@ int GetFieldCellKind(int x, int y)
     if (y < 0 || y >= FIELD_HEIGHT)
         return B;
 
-    return field[y][x];
+    return field[FIELD_HEIGHT - y - 1][x];
 }
 
 void SetDebugMode()

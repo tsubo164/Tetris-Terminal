@@ -123,31 +123,6 @@ static Point rotate(Point point, int rotation)
     return result;
 }
 
-static Point translate(Point point, int rotation, int kind)
-{
-    if (rotation < 1 || rotation > 4)
-        return point;
-
-    const Point offsets_i[4] = {{ 0, 0}, { 1,  0}, { 1,  1}, { 0,  1}};
-    const Point offsets_o[4] = {{ 0, 0}, { 0, -1}, { 1, -1}, { 1,  0}};
-    const Point *offsets = nullptr;
-
-    if (kind == I)
-        offsets = offsets_i;
-
-    if (kind == O)
-        offsets = offsets_o;
-
-    Point result = point;
-
-    if (offsets) {
-        result.x += offsets[rotation].x;
-        result.y += offsets[rotation].y;
-    }
-
-    return result;
-}
-
 static void init_state(int kind, int rotation, RotationState &state)
 {
     int cell_index = 0;
@@ -159,7 +134,6 @@ static void init_state(int kind, int rotation, RotationState &state)
             if (cell) {
                 // state array index (0, 0) is mapped to Point (-1, -1)
                 Point p = rotate({x - 1, y - 1}, rotation);
-                p = translate(p, rotation, kind);
                 state.cells[cell_index++] = p;
             }
 
@@ -195,6 +169,66 @@ static bool can_fit(const Tetromino &tet)
     }
 
     return true;
+}
+
+// TTC offset data is based on Y up. So Y values in this table
+// have been nagated from their's
+// https://tetris.wiki/Super_Rotation_System
+static const Point offset_table_jlstz [4][5] = {
+    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{ 0, 0}, {+1, 0}, {+1,+1}, { 0,-2}, {+1,-2}},
+    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{ 0, 0}, {-1, 0}, {-1,+1}, { 0,-2}, {-1,-2}},
+};
+static const Point offset_table_i [4][5] = {
+    {{ 0, 0}, {-1, 0}, {+2, 0}, {-1, 0}, {+2, 0}},
+    {{-1, 0}, { 0, 0}, { 0, 0}, { 0,-1}, { 0,+2}},
+    {{-1,-1}, {+1,-1}, {-2,-1}, {+1, 0}, {-2, 0}},
+    {{ 0,-1}, { 0,-1}, { 0,-1}, { 0,+1}, { 0,-2}},
+};
+static const Point offset_table_o [4][5] = {
+    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{ 0,+1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{-1,+1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+    {{-1, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
+};
+
+static bool kick_wall(Tetromino &tet, int old_rotation)
+{
+    const int new_rotation = tet.rotation;
+    const Point *offsets0 = nullptr;
+    const Point *offsets1 = nullptr;
+
+    // Pick up offset data based on tetromino kind.
+    if (tet.kind == I) {
+        offsets0 = offset_table_i[old_rotation];
+        offsets1 = offset_table_i[new_rotation];
+    }
+    else if (tet.kind == O) {
+        offsets0 = offset_table_o[old_rotation];
+        offsets1 = offset_table_o[new_rotation];
+    }
+    else {
+        offsets0 = offset_table_jlstz[old_rotation];
+        offsets1 = offset_table_jlstz[new_rotation];
+    }
+
+    // Tests against 5 offsets.
+    for (int i = 0; i < 5; i++) {
+        const Point offset0 = offsets0[i];
+        const Point offset1 = offsets1[i];
+
+        Tetromino test = tet;
+        test.x += offset0.x - offset1.x;
+        test.y += offset0.y - offset1.y;
+
+        if (can_fit(test)) {
+            tet.x = test.x;
+            tet.y = test.y;
+            return true;
+        }
+    }
+    return false;
 }
 
 void PlayGame()
@@ -248,13 +282,19 @@ void MoveTetromino(int action)
     }
     if (action & ROT_LEFT) {
         moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
-        if (can_fit(moved_tetro))
+        if (kick_wall(moved_tetro, tetromino.rotation)) {
             tetromino.rotation = moved_tetro.rotation;
+            tetromino.x = moved_tetro.x;
+            tetromino.y = moved_tetro.y;
+        }
     }
     if (action & ROT_RIGHT) {
         moved_tetro.rotation = (tetromino.rotation + 1) % 4;
-        if (can_fit(moved_tetro))
+        if (kick_wall(moved_tetro, tetromino.rotation)) {
             tetromino.rotation = moved_tetro.rotation;
+            tetromino.x = moved_tetro.x;
+            tetromino.y = moved_tetro.y;
+        }
     }
 }
 

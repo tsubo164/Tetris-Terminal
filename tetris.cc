@@ -274,45 +274,34 @@ void MoveTetromino(int action)
 {
     Tetromino moved_tetro = tetromino;
 
-    if (action & MOV_LEFT) {
+    // Move
+    if (action & MOV_LEFT)
         moved_tetro.pos.x--;
-        if (can_fit(moved_tetro))
-            tetromino.pos.x--;
-    }
-    if (action & MOV_RIGHT) {
+
+    if (action & MOV_RIGHT)
         moved_tetro.pos.x++;
-        if (can_fit(moved_tetro))
-            tetromino.pos.x++;
-    }
-    if (action & MOV_UP) {
-        if (IsDebugMode()) {
-            moved_tetro.pos.y++;
-            if (can_fit(moved_tetro))
-                tetromino.pos.y++;
-        }
-    }
-    if (action & MOV_DOWN) {
+
+    if (action & MOV_DOWN)
         moved_tetro.pos.y--;
-        if (can_fit(moved_tetro))
-            tetromino.pos.y--;
+
+    if ((action & MOV_UP) && IsDebugMode())
+        moved_tetro.pos.y++;
+
+    if (can_fit(moved_tetro)) {
+        tetromino = moved_tetro;
+        reset_lock_down_counter();
     }
-    if (action & ROT_LEFT) {
+
+    // Rot
+    if (action & ROT_LEFT)
         moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
-        if (kick_wall(moved_tetro, tetromino.rotation)) {
-            tetromino.rotation = moved_tetro.rotation;
-            tetromino.pos = moved_tetro.pos;
 
-            reset_lock_down_counter();
-        }
-    }
-    if (action & ROT_RIGHT) {
+    if (action & ROT_RIGHT)
         moved_tetro.rotation = (tetromino.rotation + 1) % 4;
-        if (kick_wall(moved_tetro, tetromino.rotation)) {
-            tetromino.rotation = moved_tetro.rotation;
-            tetromino.pos = moved_tetro.pos;
 
-            reset_lock_down_counter();
-        }
+    if (kick_wall(moved_tetro, tetromino.rotation)) {
+        tetromino = moved_tetro;
+        reset_lock_down_counter();
     }
 }
 
@@ -320,9 +309,7 @@ static void set_field_cell_kind(Point field, int kind);
 
 void UpdateFrame()
 {
-    // As soon as lock down finishes, we will test if a tetromino can move
-    // even if its between fall period.
-    if (frame % period == 0 || lock_down_counter == 0) {
+    if (frame % period == 0) {
         if (IsDebugMode())
             return;
 
@@ -333,23 +320,23 @@ void UpdateFrame()
             tetromino.pos.y--;
             reset_lock_down_counter();
         }
-        else if (lock_down_counter == 0) {
-            // end lock down
-            for (int i = 0; i < 4; i++) {
-                const Cell cell = GetTetrominoCell(i);
-                set_field_cell_kind(cell.pos, cell.kind);
-            }
-
-            spawn_tetromino();
-            reset_lock_down_counter();
-        }
         else if (lock_down_counter == -1) {
             // start lock down
             lock_down_counter = playing_fps / 2;
         }
     }
 
-    if (lock_down_counter > 0) {
+    if (lock_down_counter == 0) {
+        // end lock down
+        for (int i = 0; i < 4; i++) {
+            const Cell cell = GetTetrominoCell(i);
+            set_field_cell_kind(cell.pos, cell.kind);
+        }
+
+        spawn_tetromino();
+        reset_lock_down_counter();
+    }
+    else if (lock_down_counter > 0) {
         lock_down_counter--;
     }
 

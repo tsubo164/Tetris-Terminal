@@ -106,6 +106,8 @@ static int lock_down_counter = -1;
 static bool is_line_cleared[FIELD_HEIGHT] = {0};
 static int cleared_line_count = 0;
 
+static int clearing_timer = -1;
+
 static void reset_lock_down_counter()
 {
     lock_down_counter = -1;
@@ -378,6 +380,17 @@ static void clear_lines()
 
 void UpdateFrame()
 {
+    if (clearing_timer > 0) {
+        clearing_timer--;
+        return;
+    }
+    else if (clearing_timer == 0) {
+        clear_lines();
+        clearing_timer = -1;
+        spawn_tetromino();
+        return;
+    }
+
     if (frame % period == 0) {
         if (IsDebugMode())
             return;
@@ -401,15 +414,19 @@ void UpdateFrame()
             const Cell cell = GetTetrominoCell(i);
             set_field_cell_kind(cell.pos, cell.kind);
         }
-
-        // clear lines
-        cleared_line_count = find_cleared_lines(is_line_cleared);
-        if (cleared_line_count)
-            clear_lines();
-
-        // spawn
-        spawn_tetromino();
         reset_lock_down_counter();
+
+        cleared_line_count = find_cleared_lines(is_line_cleared);
+
+        if (cleared_line_count) {
+            // clear lines
+            tetromino.kind = E;
+            clearing_timer = 20;
+        }
+        else {
+            // spawn
+            spawn_tetromino();
+        }
     }
     else if (lock_down_counter > 0) {
         lock_down_counter--;

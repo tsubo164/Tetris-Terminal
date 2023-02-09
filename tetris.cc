@@ -103,6 +103,9 @@ static bool debug_mode = false;
 static int playing_fps = 60;
 static int lock_down_counter = -1;
 
+static bool is_line_cleared[FIELD_HEIGHT] = {0};
+static int cleared_line_count = 0;
+
 static void reset_lock_down_counter()
 {
     lock_down_counter = -1;
@@ -305,7 +308,73 @@ void MoveTetromino(int action)
     }
 }
 
+static bool is_line_filled(int y)
+{
+    for (int x = 1; x < FIELD_WIDTH - 1; x++)
+        if (GetFieldCellKind({x, y}) == E)
+            return false;
+
+    return true;
+}
+
+static int find_cleared_lines(bool *is_cleared)
+{
+    int cleared_count = 0;
+
+    // Zero clear
+    for (int i = 0; i < FIELD_HEIGHT; i++) {
+        is_cleared[i] = false;
+    }
+
+    // Fill the line
+    for (int i = 0; i < 4; i++) {
+        const Cell cell = GetTetrominoCell(i);
+
+        if (is_line_filled(cell.pos.y)) {
+            is_cleared[cell.pos.y] = true;
+            cleared_count++;
+        }
+    }
+
+    return cleared_count;
+}
+
 static void set_field_cell_kind(Point field, int kind);
+
+static void copy_line(int src_line, int dst_line)
+{
+    for (int x = 1; x < FIELD_WIDTH - 1; x++) {
+        int cell;
+
+        if (src_line < FIELD_HEIGHT - 1)
+            cell = GetFieldCellKind({x, src_line});
+        else
+            cell = E;
+
+        set_field_cell_kind({x, dst_line}, cell);
+    }
+}
+
+static void clear_lines()
+{
+    int src_line = 0;
+    int dst_line = 0;
+
+    while (dst_line < FIELD_HEIGHT - 1) {
+        // Copy a line downwards
+        if (src_line != dst_line)
+            copy_line(src_line, dst_line);
+
+        // Move up destination line by one
+        dst_line++;
+
+        // Move up source line to the next uncleared line
+        do {
+            src_line++;
+        }
+        while (is_line_cleared[src_line] && src_line < FIELD_HEIGHT - 1);
+    }
+}
 
 void UpdateFrame()
 {
@@ -333,6 +402,12 @@ void UpdateFrame()
             set_field_cell_kind(cell.pos, cell.kind);
         }
 
+        // clear lines
+        cleared_line_count = find_cleared_lines(is_line_cleared);
+        if (cleared_line_count)
+            clear_lines();
+
+        // spawn
         spawn_tetromino();
         reset_lock_down_counter();
     }

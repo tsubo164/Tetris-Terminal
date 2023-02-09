@@ -36,6 +36,9 @@ void UpdateFrame();
 Cell GetTetrominoCell(int index);
 int GetFieldCellKind(Point field);
 
+int GetClearingTimer();
+void GetClearedLines(int *lines);
+
 void SetDebugMode();
 bool IsDebugMode();
 void ChangeTetrominoKind(int kind);

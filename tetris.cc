@@ -468,6 +468,25 @@ int GetFieldCellKind(Point field)
     return field_grid[FIELD_HEIGHT - field.y - 1][field.x];
 }
 
+int GetClearingTimer()
+{
+    return clearing_timer;
+}
+
+void GetClearedLines(int *lines)
+{
+    int index = 0;
+
+    for (int y = 0; y < FIELD_HEIGHT; y++) {
+        if (is_line_cleared[y]) {
+            lines[index++] = y;
+
+            if (index == 4)
+                return;
+        }
+    }
+}
+
 void SetDebugMode()
 {
     debug_mode = true;

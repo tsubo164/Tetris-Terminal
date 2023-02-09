@@ -125,6 +125,27 @@ static void draw_field()
             draw_cell(kind, x, y);
         }
     }
+
+    const int clearing_timer = GetClearingTimer();
+    if (clearing_timer == -1)
+        return;
+
+    int cleared_lines[4] = {0};
+    GetClearedLines(cleared_lines);
+    const int duration = 20;
+    const int frame_per_cell = duration / 5;
+    const int erase = clearing_timer / frame_per_cell;
+
+    for (int i = 0; i < 4; i++) {
+        const int cleared_y = cleared_lines[i];
+
+        if (cleared_y == 0)
+            continue;
+
+        for (int x = erase + 1; x < 11 - erase; x++) {
+            draw_char(x, cleared_y, ' ');
+        }
+    }
 }
 
 static void draw_info()

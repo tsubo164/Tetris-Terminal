@@ -2,10 +2,8 @@
 #define TETRIS_H
 
 #include "point.h"
+#include "field.h"
 #include "cell.h"
-
-constexpr int FIELD_WIDTH = 10 + 2;
-constexpr int FIELD_HEIGHT = 20 + 2;
 
 enum TetrominoAction {
     MOV_RIGHT = 1 << 0,
@@ -24,7 +22,6 @@ void MoveTetromino(int action);
 void UpdateFrame();
 
 Cell GetTetrominoCell(int index);
-int GetFieldCellKind(Point field);
 
 int GetClearingTimer();
 void GetClearedLines(int *lines);

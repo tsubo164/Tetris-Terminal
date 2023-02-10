@@ -2,32 +2,6 @@
 #include <iostream>
 #include <cassert>
 
-static char field_grid[FIELD_HEIGHT][FIELD_WIDTH] =
-{
-    {B,B,B,0,0,0,0,0,0,B,B,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,0,0,0,0,0,0,0,0,0,0,B},
-    {B,B,B,B,B,B,B,B,B,B,B,B},
-};
-
 static char tetromino_grid[8][4][4] =
 {
     { // E
@@ -102,9 +76,6 @@ static bool debug_mode = false;
 
 static int playing_fps = 60;
 static int lock_down_counter = -1;
-
-static bool is_line_cleared[FIELD_HEIGHT] = {0};
-static int cleared_line_count = 0;
 
 static int clearing_timer = -1;
 
@@ -310,72 +281,21 @@ void MoveTetromino(int action)
     }
 }
 
-static bool is_line_filled(int y)
-{
-    for (int x = 1; x < FIELD_WIDTH - 1; x++)
-        if (IsEmptyCell(GetFieldCellKind({x, y})))
-            return false;
-
-    return true;
-}
-
-static int find_cleared_lines(bool *is_cleared)
+static int find_cleared_lines()
 {
     int cleared_count = 0;
-
-    // Zero clear
-    for (int i = 0; i < FIELD_HEIGHT; i++) {
-        is_cleared[i] = false;
-    }
 
     // Fill the line
     for (int i = 0; i < 4; i++) {
         const Cell cell = GetTetrominoCell(i);
 
-        if (is_line_filled(cell.pos.y)) {
-            is_cleared[cell.pos.y] = true;
+        if (IsLineFull(cell.pos.y)) {
+            MarkLineCleared(cell.pos.y);
             cleared_count++;
         }
     }
 
     return cleared_count;
-}
-
-static void set_field_cell_kind(Point field, int kind);
-
-static void copy_line(int src_line, int dst_line)
-{
-    for (int x = 1; x < FIELD_WIDTH - 1; x++) {
-        int cell;
-
-        if (src_line < FIELD_HEIGHT - 1)
-            cell = GetFieldCellKind({x, src_line});
-        else
-            cell = E;
-
-        set_field_cell_kind({x, dst_line}, cell);
-    }
-}
-
-static void clear_lines()
-{
-    int src_line = 0;
-    int dst_line = 0;
-
-    while (dst_line < FIELD_HEIGHT - 1) {
-        // Copy a line downwards
-        if (src_line != dst_line)
-            copy_line(src_line, dst_line);
-
-        // Move up destination line by one
-        dst_line++;
-
-        // Move up source line to the next uncleared line
-        do {
-            src_line++;
-        }
-        while (is_line_cleared[src_line] && src_line < FIELD_HEIGHT - 1);
-    }
 }
 
 void UpdateFrame()
@@ -385,7 +305,7 @@ void UpdateFrame()
         return;
     }
     else if (clearing_timer == 0) {
-        clear_lines();
+        ClearLines();
         clearing_timer = -1;
         spawn_tetromino();
         return;
@@ -412,11 +332,11 @@ void UpdateFrame()
         // end lock down
         for (int i = 0; i < 4; i++) {
             const Cell cell = GetTetrominoCell(i);
-            set_field_cell_kind(cell.pos, cell.kind);
+            SetFieldCellKind(cell.pos, cell.kind);
         }
         reset_lock_down_counter();
 
-        cleared_line_count = find_cleared_lines(is_line_cleared);
+        const int cleared_line_count = find_cleared_lines();
 
         if (cleared_line_count) {
             // clear lines
@@ -446,28 +366,6 @@ Cell GetTetrominoCell(int index)
     return cell;
 }
 
-void set_field_cell_kind(Point field, int kind)
-{
-    assert(IsValidCell(kind));
-
-    if (field.x < 0 || field.x >= FIELD_WIDTH)
-        return;
-    if (field.y < 0 || field.y >= FIELD_HEIGHT)
-        return;
-
-    field_grid[FIELD_HEIGHT - field.y - 1][field.x] = kind;
-}
-
-int GetFieldCellKind(Point field)
-{
-    if (field.x < 0 || field.x >= FIELD_WIDTH)
-        return B;
-    if (field.y < 0 || field.y >= FIELD_HEIGHT)
-        return B;
-
-    return field_grid[FIELD_HEIGHT - field.y - 1][field.x];
-}
-
 int GetClearingTimer()
 {
     return clearing_timer;
@@ -478,7 +376,7 @@ void GetClearedLines(int *lines)
     int index = 0;
 
     for (int y = 0; y < FIELD_HEIGHT; y++) {
-        if (is_line_cleared[y]) {
+        if (IsLineCleard(y)) {
             lines[index++] = y;
 
             if (index == 4)

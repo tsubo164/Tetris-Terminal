@@ -100,7 +100,7 @@ static char get_cell_symbol(int cell)
 
 static const int DEFAULT_COLOR_PAIR = CELL_END;
 
-static void draw_cell(int kind, int x, int y)
+static void draw_cell(int x, int y, int kind)
 {
     if (IsEmptyCell(kind))
         return;
@@ -119,7 +119,7 @@ static void draw_tetromino()
 {
     for (int i = 0; i < 4; i++) {
         const Cell cell = GetTetrominoCell(i);
-        draw_cell(cell.kind, cell.pos.x, cell.pos.y);
+        draw_cell(cell.pos.x, cell.pos.y, cell.kind);
     }
 }
 
@@ -128,7 +128,7 @@ static void draw_field()
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = GetFieldCellKind(Point(x, y));
-            draw_cell(kind, x, y);
+            draw_cell(x, y, kind);
         }
     }
 

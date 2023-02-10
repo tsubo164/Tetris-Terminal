@@ -24,7 +24,6 @@ void UpdateFrame();
 Cell GetTetrominoCell(int index);
 
 int GetClearingTimer();
-void GetClearedLines(int *lines);
 
 void SetDebugMode();
 bool IsDebugMode();

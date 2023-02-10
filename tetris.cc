@@ -281,23 +281,6 @@ void MoveTetromino(int action)
     }
 }
 
-static int find_cleared_lines()
-{
-    int cleared_count = 0;
-
-    // Fill the line
-    for (int i = 0; i < 4; i++) {
-        const Cell cell = GetTetrominoCell(i);
-
-        if (IsLineFull(cell.pos.y)) {
-            MarkLineCleared(cell.pos.y);
-            cleared_count++;
-        }
-    }
-
-    return cleared_count;
-}
-
 void UpdateFrame()
 {
     if (clearing_timer > 0) {
@@ -336,9 +319,7 @@ void UpdateFrame()
         }
         reset_lock_down_counter();
 
-        const int cleared_line_count = find_cleared_lines();
-
-        if (cleared_line_count) {
+        if (GetClearedLineCount() > 0) {
             // clear lines
             tetromino.kind = E;
             clearing_timer = 20;
@@ -369,20 +350,6 @@ Cell GetTetrominoCell(int index)
 int GetClearingTimer()
 {
     return clearing_timer;
-}
-
-void GetClearedLines(int *lines)
-{
-    int index = 0;
-
-    for (int y = 0; y < FIELD_HEIGHT; y++) {
-        if (IsLineCleard(y)) {
-            lines[index++] = y;
-
-            if (index == 4)
-                return;
-        }
-    }
 }
 
 void SetDebugMode()

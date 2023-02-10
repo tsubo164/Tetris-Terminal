@@ -9,9 +9,9 @@ constexpr int FIELD_HEIGHT = 20;
 int GetFieldCellKind(Point field);
 void SetFieldCellKind(Point field, int kind);
 
-bool IsLineCleard(int y);
-bool IsLineFull(int y);
-void MarkLineCleared(int y);
+int GetClearedLineCount();
+void GetClearedLines(int *cleared_line_y);
+
 void ClearLines();
 
 #endif

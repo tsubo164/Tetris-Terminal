@@ -98,14 +98,20 @@ static char get_cell_symbol(int cell)
     }
 }
 
+static const int DEFAULT_COLOR_PAIR = CELL_END;
+
 static void draw_cell(int kind, int x, int y)
 {
-    if (kind == E)
+    if (IsEmptyCell(kind))
         return;
 
-    const char sym = get_cell_symbol(kind);
-    attrset(COLOR_PAIR(kind));
-    draw_char(x, y, sym);
+    if (IsSolidCell(kind))
+        attrset(COLOR_PAIR(kind));
+    else
+        attrset(COLOR_PAIR(DEFAULT_COLOR_PAIR));
+
+    draw_char(x, y, get_cell_symbol(kind));
+
     attrset(0);
 }
 
@@ -185,8 +191,8 @@ static void initialize_colors()
 
     init_color(DEFAULT_BG_COLOR, 160, 160, 160);
     init_color(DEFAULT_FG_COLOR, 1000, 1000, 1000);
-    init_pair(B + 1, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
-    bkgd(COLOR_PAIR(B + 1));
+    init_pair(DEFAULT_COLOR_PAIR, DEFAULT_FG_COLOR, DEFAULT_BG_COLOR);
+    bkgd(COLOR_PAIR(DEFAULT_COLOR_PAIR));
 
     assign_color(I, 0, 1000, 1000);
     assign_color(O, 1000, 1000, 0);
@@ -195,7 +201,7 @@ static void initialize_colors()
     assign_color(J, 100, 300, 1000);
     assign_color(L, 1000, 500, 0);
     assign_color(T, 1000, 0, 500);
-    assign_color(B, 800, 800, 800);
+    assign_color(DEFAULT_COLOR_PAIR, 800, 800, 800);
 }
 
 static int initialize_screen()

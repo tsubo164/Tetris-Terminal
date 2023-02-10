@@ -115,7 +115,7 @@ static void reset_lock_down_counter()
 
 static RotationState &get_rotaion_state(int kind, int rotation)
 {
-    assert(kind >= E && kind < B);
+    assert(IsValidCell(kind));
     assert(rotation >= 0 && rotation < 4);
 
     return rotation_states[kind][rotation];
@@ -161,7 +161,7 @@ static void init_state(int kind, int rotation, RotationState &state)
 static void initialize_rotation_states()
 {
     // loop over all tetrominoes
-    for (int kind = E; kind < B; kind++)
+    for (int kind = E; kind < CELL_END; kind++)
     {
         // loop over 4 rotations
         for (int rot = 0; rot < 4; rot++) {
@@ -251,7 +251,7 @@ static void spawn_tetromino()
     tetromino.pos = {5, 21};
 
     kind++;
-    if (kind == B)
+    if (kind == CELL_END)
         kind = I;
 }
 
@@ -313,7 +313,7 @@ void MoveTetromino(int action)
 static bool is_line_filled(int y)
 {
     for (int x = 1; x < FIELD_WIDTH - 1; x++)
-        if (GetFieldCellKind({x, y}) == E)
+        if (IsEmptyCell(GetFieldCellKind({x, y})))
             return false;
 
     return true;
@@ -448,7 +448,7 @@ Cell GetTetrominoCell(int index)
 
 void set_field_cell_kind(Point field, int kind)
 {
-    assert(kind >= E && kind <= B);
+    assert(IsValidCell(kind));
 
     if (field.x < 0 || field.x >= FIELD_WIDTH)
         return;
@@ -502,7 +502,7 @@ void ChangeTetrominoKind(int kind)
     if (!IsDebugMode())
         return;
 
-    if (kind <= E || kind >= B)
+    if (!IsSolidCell(kind))
         return;
 
     tetromino.kind = kind;

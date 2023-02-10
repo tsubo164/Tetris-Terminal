@@ -2,15 +2,10 @@
 #define TETRIS_H
 
 #include "point.h"
+#include "cell.h"
 
 constexpr int FIELD_WIDTH = 10 + 2;
 constexpr int FIELD_HEIGHT = 20 + 2;
-
-enum CellKind {
-    E = 0, // empty
-    I, O, S, Z, J, L, T,
-    B, // border
-};
 
 enum TetrominoAction {
     MOV_RIGHT = 1 << 0,
@@ -19,11 +14,6 @@ enum TetrominoAction {
     MOV_DOWN  = 1 << 3,
     ROT_RIGHT = 1 << 4,
     ROT_LEFT  = 1 << 5,
-};
-
-struct Cell {
-    int kind = 0;
-    Point pos;
 };
 
 void PlayGame();

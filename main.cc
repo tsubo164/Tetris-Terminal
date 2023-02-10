@@ -11,7 +11,7 @@ static void finalize_screen();
 static void input_key();
 static void render();
 
-static const int SCREEN_HEIGHT = FIELD_HEIGHT;
+static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 
 // Counters
 static double fps = 0.0;
@@ -85,7 +85,7 @@ static void draw_str(int x, int y, const char *str)
 static char get_cell_symbol(int cell)
 {
     switch (cell) {
-        case E: return ' ';
+        case E: return '.';
         case I: return 'I';
         case O: return 'O';
         case S: return 'S';
@@ -102,7 +102,7 @@ static const int DEFAULT_COLOR_PAIR = CELL_END;
 
 static void draw_cell(int x, int y, int kind)
 {
-    if (IsEmptyCell(kind))
+    if (IsEmptyCell(kind) && !IsDebugMode())
         return;
 
     if (IsSolidCell(kind))
@@ -119,16 +119,27 @@ static void draw_tetromino()
 {
     for (int i = 0; i < 4; i++) {
         const Cell cell = GetTetrominoCell(i);
-        draw_cell(cell.pos.x, cell.pos.y, cell.kind);
+        draw_cell(cell.pos.x + 1, cell.pos.y + 1, cell.kind);
     }
 }
 
 static void draw_field()
 {
+    // Borders
+    for (int y = 0; y < FIELD_HEIGHT; y++) {
+        draw_cell(0, y + 1, B);
+        draw_cell(FIELD_WIDTH + 1, y + 1, B);
+    }
+    for (int x = 0; x < FIELD_WIDTH + 2; x++) {
+        draw_cell(x, 0, B);
+        draw_cell(x, FIELD_HEIGHT + 1, (x < 3 || x > 8) ? B : E);
+    }
+
+    // Field
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = GetFieldCellKind(Point(x, y));
-            draw_cell(x, y, kind);
+            draw_cell(x + 1, y + 1, kind);
         }
     }
 

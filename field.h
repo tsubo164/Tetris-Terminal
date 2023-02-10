@@ -3,8 +3,8 @@
 
 #include "point.h"
 
-constexpr int FIELD_WIDTH = 10 + 2;
-constexpr int FIELD_HEIGHT = 20 + 2;
+constexpr int FIELD_WIDTH = 10;
+constexpr int FIELD_HEIGHT = 20;
 
 int GetFieldCellKind(Point field);
 void SetFieldCellKind(Point field, int kind);

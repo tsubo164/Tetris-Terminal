@@ -219,7 +219,7 @@ static void spawn_tetromino()
 
     tetromino = Tetromino();
     tetromino.kind = kind;
-    tetromino.pos = {5, 21};
+    tetromino.pos = {4, 19};
 
     kind++;
     if (kind == CELL_END)

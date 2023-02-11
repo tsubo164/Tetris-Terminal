@@ -2,39 +2,26 @@
 #include "cell.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cassert>
 #include <vector>
 #include <array>
 
 struct Line {
-    Line () {}
     std::array<char,FIELD_WIDTH> elem {0};
     bool is_cleared = false;
+    int8_t count = 0;
 
+    Line () {}
     const char operator[](int i) const { return elem[i]; }
     char &operator[](int i) { return elem[i]; }
+
+    bool IsFilled() const { return count == FIELD_WIDTH; }
+    void MarkCleared() { is_cleared = true; }
 };
 
 static std::vector<Line> lines(FIELD_HEIGHT);
 static int cleared_line_count = 0;
-
-static bool is_line_full(int y)
-{
-    for (int x = 0; x < FIELD_WIDTH; x++)
-        if (IsEmptyCell(GetFieldCellKind({x, y})))
-            return false;
-    return true;
-}
-
-static void mark_line_cleared(int y)
-{
-    if (lines[y].is_cleared)
-        return;
-
-    cleared_line_count++;
-
-    lines[y].is_cleared = true;
-}
 
 bool is_inside_field(Point pos)
 {
@@ -62,11 +49,16 @@ void SetFieldCellKind(Point pos, int kind)
     if (!is_inside_field(pos))
         return;
 
-    lines[pos.y][pos.x] = kind;
+    const int x = pos.x, y = pos.y;
 
-    // XXX TEMP
-    if (is_line_full(pos.y))
-        mark_line_cleared(pos.y);
+    assert(IsEmptyCell(lines[y][x]));
+    lines[y][x] = kind;
+    lines[y].count++;
+
+    if (lines[y].IsFilled()) {
+        lines[y].MarkCleared();
+        cleared_line_count++;
+    }
 }
 
 int GetClearedLineCount()

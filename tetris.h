@@ -5,6 +5,12 @@
 #include "field.h"
 #include "cell.h"
 
+struct Tetromino {
+    int kind;
+    int rotation;
+    Point pos;
+};
+
 enum TetrominoAction {
     MOV_RIGHT = 1 << 0,
     MOV_LEFT  = 1 << 1,
@@ -14,19 +20,51 @@ enum TetrominoAction {
     ROT_LEFT  = 1 << 5,
 };
 
-void PlayGame();
-void QuitGame();
-bool IsPlaying();
+struct RotationState {
+    Point cells[4];
+};
 
-void MoveTetromino(int action);
-void UpdateFrame();
+class Tetris {
+public:
+    Tetris();
+    ~Tetris();
 
-Cell GetTetrominoCell(int index);
+    void PlayGame();
+    void QuitGame();
+    bool IsPlaying();
 
-int GetClearingTimer();
+    void MoveTetromino(int action);
+    void UpdateFrame();
 
-void SetDebugMode();
-bool IsDebugMode();
-void ChangeTetrominoKind(int kind);
+    Cell GetTetrominoCell(int index);
+
+    int GetClearingTimer();
+
+    void SetDebugMode();
+    bool IsDebugMode();
+    void ChangeTetrominoKind(int kind);
+
+private:
+    Tetromino tetromino;
+
+    // 8 tetrominoes x 4 rotations
+    RotationState rotation_states[8][4] = {};
+
+    bool is_playing = false;
+    bool debug_mode = false;
+    int playing_fps = 60;
+
+    unsigned long frame = 0;
+    int period = 60;
+    int lock_down_counter = -1;
+    int clearing_timer = -1;
+
+    void reset_lock_down_counter();
+    RotationState &get_rotaion_state(int kind, int rotation);
+    void initialize_rotation_states();
+    bool can_fit(const Tetromino &tet);
+    bool kick_wall(Tetromino &tet, int old_rotation);
+    void spawn_tetromino();
+};
 
 #endif

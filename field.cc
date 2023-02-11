@@ -4,11 +4,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <cassert>
-#include <vector>
 #include <array>
 
 struct Line {
-    std::array<char,FIELD_WIDTH> elem {0};
+    std::array<char, FIELD_WIDTH> elem {0};
     bool is_cleared = false;
     int8_t count = 0;
 
@@ -20,7 +19,7 @@ struct Line {
     void MarkCleared() { is_cleared = true; }
 };
 
-static std::vector<Line> lines(FIELD_HEIGHT);
+static std::array<Line, FIELD_HEIGHT> lines;
 static int cleared_line_count = 0;
 
 bool is_inside_field(Point pos)

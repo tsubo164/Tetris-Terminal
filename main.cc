@@ -17,12 +17,15 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 static double fps = 0.0;
 static unsigned long frame = 0;
 
+Tetris tetris;
+
+
 int main(int argc, char **argv)
 {
     // Arguments
     if (argc == 2) {
         if (!strcmp(argv[1], "-d")) {
-            SetDebugMode();
+            tetris.SetDebugMode();
         }
         else {
             fprintf(stderr, "error: unknown option: %s\n", argv[1]);
@@ -37,15 +40,15 @@ int main(int argc, char **argv)
     // Timer
     auto start = std::chrono::steady_clock::now();
 
-    PlayGame();
+    tetris.PlayGame();
 
-    while (IsPlaying()) {
+    while (tetris.IsPlaying()) {
 
         // Input
         input_key();
 
         // Game logic
-        UpdateFrame();
+        tetris.UpdateFrame();
 
         // Rednering
         render();;
@@ -102,7 +105,7 @@ static const int DEFAULT_COLOR_PAIR = CELL_END;
 
 static void draw_cell(int x, int y, int kind)
 {
-    if (IsEmptyCell(kind) && !IsDebugMode())
+    if (IsEmptyCell(kind) && !tetris.IsDebugMode())
         return;
 
     if (IsSolidCell(kind))
@@ -118,7 +121,7 @@ static void draw_cell(int x, int y, int kind)
 static void draw_tetromino()
 {
     for (int i = 0; i < 4; i++) {
-        const Cell cell = GetTetrominoCell(i);
+        const Cell cell = tetris.GetTetrominoCell(i);
         draw_cell(cell.pos.x + 1, cell.pos.y + 1, cell.kind);
     }
 }
@@ -143,7 +146,7 @@ static void draw_field()
         }
     }
 
-    const int clearing_timer = GetClearingTimer();
+    const int clearing_timer = tetris.GetClearingTimer();
     if (clearing_timer == -1)
         return;
 
@@ -239,24 +242,24 @@ static void input_key()
     const int key = getch();
 
     switch (key) {
-    case 'd': MoveTetromino(ROT_LEFT); break;
-    case 'f': MoveTetromino(ROT_RIGHT); break;
-    case 'h': MoveTetromino(MOV_LEFT); break;
-    case 'l': MoveTetromino(MOV_RIGHT); break;
-    case 'k': MoveTetromino(MOV_UP); break;
-    case 'j': MoveTetromino(MOV_DOWN); break;
+    case 'd': tetris.MoveTetromino(ROT_LEFT); break;
+    case 'f': tetris.MoveTetromino(ROT_RIGHT); break;
+    case 'h': tetris.MoveTetromino(MOV_LEFT); break;
+    case 'l': tetris.MoveTetromino(MOV_RIGHT); break;
+    case 'k': tetris.MoveTetromino(MOV_UP); break;
+    case 'j': tetris.MoveTetromino(MOV_DOWN); break;
 
     case '1': case '2': case '3': case '4': case '5': case '6': case '7':
-        ChangeTetrominoKind(key - '1' + 1);
+        tetris.ChangeTetrominoKind(key - '1' + 1);
         break;
 
     case 'r':
         frame = 0;
-        PlayGame();
+        tetris.PlayGame();
         break;
 
     case 'q':
-        QuitGame();
+        tetris.QuitGame();
         break;
 
     default:

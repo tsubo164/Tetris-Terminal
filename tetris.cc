@@ -54,37 +54,12 @@ static char tetromino_grid[8][4][4] =
     },
 };
 
-struct RotationState {
-    Point cells[4];
-};
-
-struct Tetromino {
-    int kind;
-    int rotation;
-    Point pos;
-};
-
-// 8 tetrominoes x 4 rotations
-static RotationState rotation_states[8][4] = {};
-
-// Game logic data
-static unsigned long frame = 0;
-static bool is_playing = false;
-static int period = 60;
-static Tetromino tetromino;
-static bool debug_mode = false;
-
-static int playing_fps = 60;
-static int lock_down_counter = -1;
-
-static int clearing_timer = -1;
-
-static void reset_lock_down_counter()
+void Tetris::reset_lock_down_counter()
 {
     lock_down_counter = -1;
 }
 
-static RotationState &get_rotaion_state(int kind, int rotation)
+RotationState &Tetris::get_rotaion_state(int kind, int rotation)
 {
     assert(IsValidCell(kind));
     assert(rotation >= 0 && rotation < 4);
@@ -129,7 +104,7 @@ static void init_state(int kind, int rotation, RotationState &state)
     }
 };
 
-static void initialize_rotation_states()
+void Tetris::initialize_rotation_states()
 {
     // loop over all tetrominoes
     for (int kind = E; kind < CELL_END; kind++)
@@ -142,7 +117,7 @@ static void initialize_rotation_states()
     }
 }
 
-static bool can_fit(const Tetromino &tet)
+bool Tetris::can_fit(const Tetromino &tet)
 {
     for (int i = 0; i < 4; i++) {
         const Point local = get_rotaion_state(tet.kind, tet.rotation).cells[i];
@@ -177,7 +152,7 @@ static const Point offset_table_o [4][5] = {
     {{-1, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
 };
 
-static bool kick_wall(Tetromino &tet, int old_rotation)
+bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
 {
     const int new_rotation = tet.rotation;
     const Point *offsets0 = nullptr;
@@ -213,7 +188,7 @@ static bool kick_wall(Tetromino &tet, int old_rotation)
     return false;
 }
 
-static void spawn_tetromino()
+void Tetris::spawn_tetromino()
 {
     static int kind = I;
 
@@ -226,7 +201,15 @@ static void spawn_tetromino()
         kind = I;
 }
 
-void PlayGame()
+Tetris::Tetris()
+{
+}
+
+Tetris::~Tetris()
+{
+}
+
+void Tetris::PlayGame()
 {
     initialize_rotation_states();
 
@@ -236,17 +219,17 @@ void PlayGame()
     is_playing = true;
 }
 
-void QuitGame()
+void Tetris::QuitGame()
 {
     is_playing = false;
 }
 
-bool IsPlaying()
+bool Tetris::IsPlaying()
 {
     return is_playing;
 }
 
-void MoveTetromino(int action)
+void Tetris::MoveTetromino(int action)
 {
     Tetromino moved_tetro = tetromino;
 
@@ -281,7 +264,7 @@ void MoveTetromino(int action)
     }
 }
 
-void UpdateFrame()
+void Tetris::UpdateFrame()
 {
     if (clearing_timer > 0) {
         clearing_timer--;
@@ -336,7 +319,7 @@ void UpdateFrame()
     frame++;
 }
 
-Cell GetTetrominoCell(int index)
+Cell Tetris::GetTetrominoCell(int index)
 {
     const Point local = get_rotaion_state(tetromino.kind, tetromino.rotation).cells[index];
 
@@ -347,22 +330,22 @@ Cell GetTetrominoCell(int index)
     return cell;
 }
 
-int GetClearingTimer()
+int Tetris::GetClearingTimer()
 {
     return clearing_timer;
 }
 
-void SetDebugMode()
+void Tetris::SetDebugMode()
 {
     debug_mode = true;
 }
 
-bool IsDebugMode()
+bool Tetris::IsDebugMode()
 {
     return debug_mode;
 }
 
-void ChangeTetrominoKind(int kind)
+void Tetris::ChangeTetrominoKind(int kind)
 {
     if (!IsDebugMode())
         return;

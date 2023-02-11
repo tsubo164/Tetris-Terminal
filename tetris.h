@@ -2,6 +2,7 @@
 #define TETRIS_H
 
 #include "point.h"
+#include "piece.h"
 #include "field.h"
 #include "cell.h"
 
@@ -18,10 +19,6 @@ enum TetrominoAction {
     MOV_DOWN  = 1 << 3,
     ROT_RIGHT = 1 << 4,
     ROT_LEFT  = 1 << 5,
-};
-
-struct RotationState {
-    Point cells[4];
 };
 
 class Tetris {
@@ -47,9 +44,6 @@ public:
 private:
     Tetromino tetromino;
 
-    // 8 tetrominoes x 4 rotations
-    RotationState rotation_states[8][4] = {};
-
     bool is_playing = false;
     bool debug_mode = false;
     int playing_fps = 60;
@@ -60,8 +54,6 @@ private:
     int clearing_timer = -1;
 
     void reset_lock_down_counter();
-    RotationState &get_rotaion_state(int kind, int rotation);
-    void initialize_rotation_states();
     bool can_fit(const Tetromino &tet);
     bool kick_wall(Tetromino &tet, int old_rotation);
     void spawn_tetromino();

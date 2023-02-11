@@ -158,8 +158,8 @@ static void draw_field()
     for (int i = 0; i < CLEARED_COUNT; i++) {
         const int cleared_y = cleared_lines[i];
 
-        for (int x = erase + 1; x < 11 - erase; x++) {
-            draw_char(x, cleared_y + 1, ' ');
+        for (int x = erase; x < 10 - erase; x++) {
+            draw_char(x + 1, cleared_y + 1, ' ');
         }
     }
 }

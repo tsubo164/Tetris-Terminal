@@ -72,6 +72,7 @@ static Point rotate(Point point, int rotation)
 static void init_piece(int kind, int rotation)
 {
     Piece &piece = piece_states[kind][rotation];
+    piece.kind = kind;
     int cell_index = 0;
 
     for (int y = 0; y < 4; y++) {

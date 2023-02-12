@@ -13,11 +13,11 @@ public:
     Field();
     ~Field();
 
-    int GetFieldCellKind(Point pos);
+    int GetFieldCellKind(Point pos) const;
     void SetFieldCellKind(Point pos, int kind);
 
-    int GetClearedLineCount();
-    void GetClearedLines(int *cleared_line_y);
+    int GetClearedLineCount() const;
+    void GetClearedLines(int *cleared_line_y) const;
 
     void ClearLines();
 

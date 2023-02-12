@@ -4,7 +4,6 @@
 #include "point.h"
 #include "piece.h"
 #include "field.h"
-#include "cell.h"
 #include <deque>
 
 enum TetrominoAction {
@@ -23,21 +22,26 @@ public:
 
     void PlayGame();
     void QuitGame();
-    bool IsPlaying();
+    bool IsPlaying() const;
 
+    // Move
     void MoveTetromino(int action);
     void UpdateFrame();
-    int GetClearingTimer();
 
-    Cell GetTetrominoCell(int index);
-    int GetFieldCellKind(Point pos);
-    int GetClearedLineCount();
-    void GetClearedLines(int *cleared_line_y);
+    // Field
+    int GetFieldCellKind(Point pos) const;
+    int GetClearedLineCount() const;
+    void GetClearedLines(int *cleared_line_y) const;
+    int GetClearingTimer() const;
 
-    int GetPieceKindList(int index);
+    // Piece
+    int GetPieceKindList(int index) const;
+    Piece GetCurrentPiece() const;
+    Piece GetNextPiece(int index) const;
 
+    // Debug
     void SetDebugMode();
-    bool IsDebugMode();
+    bool IsDebugMode() const;
     void ChangeTetrominoKind(int kind);
 
 private:
@@ -47,8 +51,8 @@ private:
         Point pos;
     };
 
-    Tetromino tetromino;
-    Field field;
+    Tetromino tetromino_;
+    Field field_;
 
     std::deque<int> bag_;
 

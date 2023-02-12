@@ -120,9 +120,10 @@ static void draw_cell(int x, int y, int kind)
 
 static void draw_tetromino()
 {
-    for (int i = 0; i < 4; i++) {
-        const Cell cell = tetris.GetTetrominoCell(i);
-        draw_cell(cell.pos.x + 1, cell.pos.y + 1, cell.kind);
+    const Piece piece = tetris.GetCurrentPiece();
+
+    for (auto pos: piece.cells) {
+        draw_cell(pos.x + 1, pos.y + 1, piece.kind);
     }
 }
 
@@ -176,6 +177,21 @@ static void draw_info()
     for (int i = 0; i < 14; i++) {
         const int kind = tetris.GetPieceKindList(i);
         draw_str(14 + 2 * i, 5, std::to_string(kind).c_str());
+    }
+    {
+        draw_str(15, 20, "NEXT");
+        const Point start = {14, 5};
+
+        for (int i = 0; i < 14; i++) {
+            const Piece next = tetris.GetNextPiece(i);
+
+            if (next.kind == E)
+                continue;
+
+            for (const auto &pos: next.cells) {
+                draw_cell(16 + pos.x, 18 + pos.y - i * 3, next.kind);
+            }
+        }
     }
 }
 

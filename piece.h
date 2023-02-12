@@ -7,6 +7,7 @@
 
 struct Piece {
     std::array<Point, 4> cells;
+    int kind = E;
 };
 
 void InitializePieces();

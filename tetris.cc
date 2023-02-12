@@ -32,14 +32,14 @@ void Tetris::QuitGame()
     is_playing = false;
 }
 
-bool Tetris::IsPlaying()
+bool Tetris::IsPlaying() const
 {
     return is_playing;
 }
 
 void Tetris::MoveTetromino(int action)
 {
-    Tetromino moved_tetro = tetromino;
+    Tetromino moved_tetro = tetromino_;
 
     // Move
     if (action & MOV_LEFT)
@@ -55,19 +55,19 @@ void Tetris::MoveTetromino(int action)
         moved_tetro.pos.y++;
 
     if (can_fit(moved_tetro)) {
-        tetromino = moved_tetro;
+        tetromino_ = moved_tetro;
         reset_lock_down_counter();
     }
 
     // Rot
     if (action & ROT_LEFT)
-        moved_tetro.rotation = (tetromino.rotation - 1 + 4) % 4;
+        moved_tetro.rotation = (tetromino_.rotation - 1 + 4) % 4;
 
     if (action & ROT_RIGHT)
-        moved_tetro.rotation = (tetromino.rotation + 1) % 4;
+        moved_tetro.rotation = (tetromino_.rotation + 1) % 4;
 
-    if (kick_wall(moved_tetro, tetromino.rotation)) {
-        tetromino = moved_tetro;
+    if (kick_wall(moved_tetro, tetromino_.rotation)) {
+        tetromino_ = moved_tetro;
         reset_lock_down_counter();
     }
 }
@@ -79,7 +79,7 @@ void Tetris::UpdateFrame()
         return;
     }
     else if (clearing_timer == 0) {
-        field.ClearLines();
+        field_.ClearLines();
         clearing_timer = -1;
         spawn_tetromino();
         return;
@@ -89,11 +89,11 @@ void Tetris::UpdateFrame()
         if (IsDebugMode())
             return;
 
-        Tetromino moved_tetro = tetromino;
+        Tetromino moved_tetro = tetromino_;
         moved_tetro.pos.y--;
 
         if (can_fit(moved_tetro)) {
-            tetromino.pos.y--;
+            tetromino_.pos.y--;
             reset_lock_down_counter();
         }
         else if (lock_down_counter == -1) {
@@ -104,15 +104,14 @@ void Tetris::UpdateFrame()
 
     if (lock_down_counter == 0) {
         // end lock down
-        for (int i = 0; i < 4; i++) {
-            const Cell cell = GetTetrominoCell(i);
-            field.SetFieldCellKind(cell.pos, cell.kind);
-        }
+        const Piece piece = GetCurrentPiece();
+        for (auto pos: piece.cells)
+            field_.SetFieldCellKind(pos, piece.kind);
         reset_lock_down_counter();
 
         if (GetClearedLineCount() > 0) {
-            // clear lines
-            tetromino.kind = E;
+            // start clear lines
+            tetromino_.kind = E;
             clearing_timer = 20;
         }
         else {
@@ -127,33 +126,22 @@ void Tetris::UpdateFrame()
     frame++;
 }
 
-Cell Tetris::GetTetrominoCell(int index)
+int Tetris::GetFieldCellKind(Point pos) const
 {
-    const Point local = GetPiece(tetromino.kind, tetromino.rotation).cells[index];
-
-    Cell cell;
-    cell.kind = tetromino.kind;
-    cell.pos = tetromino.pos + local;
-
-    return cell;
+    return field_.GetFieldCellKind(pos);
 }
 
-int Tetris::GetFieldCellKind(Point pos)
+int Tetris::GetClearedLineCount() const
 {
-    return field.GetFieldCellKind(pos);
+    return field_.GetClearedLineCount();
 }
 
-int Tetris::GetClearedLineCount()
+void Tetris::GetClearedLines(int *cleared_line_y) const
 {
-    return field.GetClearedLineCount();
+    field_.GetClearedLines(cleared_line_y);
 }
 
-void Tetris::GetClearedLines(int *cleared_line_y)
-{
-    field.GetClearedLines(cleared_line_y);
-}
-
-int Tetris::GetPieceKindList(int index)
+int Tetris::GetPieceKindList(int index) const
 {
     if (index < 0 || index >= bag_.size())
         return E;
@@ -161,7 +149,32 @@ int Tetris::GetPieceKindList(int index)
     return bag_[index];
 }
 
-int Tetris::GetClearingTimer()
+Piece Tetris::GetCurrentPiece() const
+{
+    Piece piece = GetPiece(tetromino_.kind, tetromino_.rotation);
+
+    for (auto &pos: piece.cells)
+        pos += tetromino_.pos;
+
+    return piece;
+}
+
+Piece Tetris::GetNextPiece(int index) const
+{
+    const int rotation = 0;
+    int kind;
+
+    if (index < 0 || index >= bag_.size())
+        kind = E;
+    else if (index >= 3)
+        kind = E;
+    else
+        kind = bag_[index];
+
+    return GetPiece(kind, rotation);
+}
+
+int Tetris::GetClearingTimer() const
 {
     return clearing_timer;
 }
@@ -171,7 +184,7 @@ void Tetris::SetDebugMode()
     debug_mode = true;
 }
 
-bool Tetris::IsDebugMode()
+bool Tetris::IsDebugMode() const
 {
     return debug_mode;
 }
@@ -184,7 +197,7 @@ void Tetris::ChangeTetrominoKind(int kind)
     if (!IsSolidCell(kind))
         return;
 
-    tetromino.kind = kind;
+    tetromino_.kind = kind;
 }
 
 void Tetris::reset_lock_down_counter()
@@ -233,7 +246,7 @@ bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
     const Point *offsets0 = nullptr;
     const Point *offsets1 = nullptr;
 
-    // Pick up offset data based on tetromino kind.
+    // Pick up offset data based on tetromino_ kind.
     if (tet.kind == I) {
         offsets0 = offset_table_i[old_rotation];
         offsets1 = offset_table_i[new_rotation];
@@ -271,9 +284,9 @@ void Tetris::spawn_tetromino()
     const int kind = bag_.front();
     bag_.pop_front();
 
-    tetromino = Tetromino();
-    tetromino.kind = kind;
-    tetromino.pos = {4, 19};
+    tetromino_ = Tetromino();
+    tetromino_.kind = kind;
+    tetromino_.pos = {4, 19};
 }
 
 void Tetris::generate_bag()

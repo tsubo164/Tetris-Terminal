@@ -23,7 +23,7 @@ bool is_inside_field(Point pos)
     return true;
 }
 
-int Field::GetFieldCellKind(Point pos)
+int Field::GetFieldCellKind(Point pos) const
 {
     if (!is_inside_field(pos))
         return B;
@@ -50,12 +50,12 @@ void Field::SetFieldCellKind(Point pos, int kind)
     }
 }
 
-int Field::GetClearedLineCount()
+int Field::GetClearedLineCount() const
 {
     return cleared_line_count;
 }
 
-void Field::GetClearedLines(int *cleared_line_y)
+void Field::GetClearedLines(int *cleared_line_y) const
 {
     int index = 0;
     int y = 0;

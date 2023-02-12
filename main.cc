@@ -51,7 +51,7 @@ int main(int argc, char **argv)
         tetris.UpdateFrame();
 
         // Rednering
-        render();;
+        render();
 
         // Measure frame cost
         const std::chrono::duration<double> dur = std::chrono::steady_clock::now() - start;
@@ -172,6 +172,11 @@ static void draw_info()
     const std::string fpsstr = "fps: " + std::to_string(fps);
     draw_str(20, 11, fpsstr.c_str());
     draw_str(20, 10, "Press 'Q' to quit");
+
+    for (int i = 0; i < 14; i++) {
+        const int kind = tetris.GetPieceKindList(i);
+        draw_str(14 + 2 * i, 5, std::to_string(kind).c_str());
+    }
 }
 
 void render()

@@ -1,6 +1,9 @@
 #include "tetris.h"
+#include <algorithm>
 #include <iostream>
 #include <cassert>
+#include <random>
+#include <array>
 
 Tetris::Tetris()
 {
@@ -13,6 +16,10 @@ Tetris::~Tetris()
 void Tetris::PlayGame()
 {
     InitializePieces();
+
+    bag_.clear();
+    for (int i = 0; i < 2; i++)
+        generate_bag();
 
     spawn_tetromino();
 
@@ -146,6 +153,14 @@ void Tetris::GetClearedLines(int *cleared_line_y)
     field.GetClearedLines(cleared_line_y);
 }
 
+int Tetris::GetPieceKindList(int index)
+{
+    if (index < 0 || index >= bag_.size())
+        return E;
+
+    return bag_[index];
+}
+
 int Tetris::GetClearingTimer()
 {
     return clearing_timer;
@@ -250,13 +265,24 @@ bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
 
 void Tetris::spawn_tetromino()
 {
-    static int kind = I;
+    if (bag_.size() == 7)
+        generate_bag();
+
+    const int kind = bag_.front();
+    bag_.pop_front();
 
     tetromino = Tetromino();
     tetromino.kind = kind;
     tetromino.pos = {4, 19};
+}
 
-    kind++;
-    if (kind == CELL_END)
-        kind = I;
+void Tetris::generate_bag()
+{
+    std::array<int, 7> kinds = {I, O, S, Z, J, L, T};
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::shuffle(kinds.begin(), kinds.end(), rng);
+
+    for (auto kind: kinds)
+        bag_.push_back(kind);
 }

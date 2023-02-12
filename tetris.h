@@ -5,12 +5,7 @@
 #include "piece.h"
 #include "field.h"
 #include "cell.h"
-
-struct Tetromino {
-    int kind;
-    int rotation;
-    Point pos;
-};
+#include <deque>
 
 enum TetrominoAction {
     MOV_RIGHT = 1 << 0,
@@ -39,13 +34,23 @@ public:
     int GetClearedLineCount();
     void GetClearedLines(int *cleared_line_y);
 
+    int GetPieceKindList(int index);
+
     void SetDebugMode();
     bool IsDebugMode();
     void ChangeTetrominoKind(int kind);
 
 private:
+    struct Tetromino {
+        int kind;
+        int rotation;
+        Point pos;
+    };
+
     Tetromino tetromino;
     Field field;
+
+    std::deque<int> bag_;
 
     bool is_playing = false;
     bool debug_mode = false;
@@ -60,6 +65,8 @@ private:
     bool can_fit(const Tetromino &tet);
     bool kick_wall(Tetromino &tet, int old_rotation);
     void spawn_tetromino();
+
+    void generate_bag();
 };
 
 #endif

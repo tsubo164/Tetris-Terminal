@@ -32,10 +32,12 @@ public:
 
     void MoveTetromino(int action);
     void UpdateFrame();
+    int GetClearingTimer();
 
     Cell GetTetrominoCell(int index);
-
-    int GetClearingTimer();
+    int GetFieldCellKind(Point pos);
+    int GetClearedLineCount();
+    void GetClearedLines(int *cleared_line_y);
 
     void SetDebugMode();
     bool IsDebugMode();
@@ -43,6 +45,7 @@ public:
 
 private:
     Tetromino tetromino;
+    Field field;
 
     bool is_playing = false;
     bool debug_mode = false;

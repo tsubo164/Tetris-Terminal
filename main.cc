@@ -141,7 +141,7 @@ static void draw_field()
     // Field
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            const int kind = GetFieldCellKind(Point(x, y));
+            const int kind = tetris.GetFieldCellKind(Point(x, y));
             draw_cell(x + 1, y + 1, kind);
         }
     }
@@ -150,9 +150,9 @@ static void draw_field()
     if (clearing_timer == -1)
         return;
 
-    const int CLEARED_COUNT = GetClearedLineCount();
+    const int CLEARED_COUNT = tetris.GetClearedLineCount();
     int cleared_lines[4] = {0};
-    GetClearedLines(cleared_lines);
+    tetris.GetClearedLines(cleared_lines);
 
     const int duration = 20;
     const int frame_per_cell = duration / 5;

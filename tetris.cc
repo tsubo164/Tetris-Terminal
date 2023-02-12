@@ -72,7 +72,7 @@ void Tetris::UpdateFrame()
         return;
     }
     else if (clearing_timer == 0) {
-        ClearLines();
+        field.ClearLines();
         clearing_timer = -1;
         spawn_tetromino();
         return;
@@ -99,7 +99,7 @@ void Tetris::UpdateFrame()
         // end lock down
         for (int i = 0; i < 4; i++) {
             const Cell cell = GetTetrominoCell(i);
-            SetFieldCellKind(cell.pos, cell.kind);
+            field.SetFieldCellKind(cell.pos, cell.kind);
         }
         reset_lock_down_counter();
 
@@ -129,6 +129,21 @@ Cell Tetris::GetTetrominoCell(int index)
     cell.pos = tetromino.pos + local;
 
     return cell;
+}
+
+int Tetris::GetFieldCellKind(Point pos)
+{
+    return field.GetFieldCellKind(pos);
+}
+
+int Tetris::GetClearedLineCount()
+{
+    return field.GetClearedLineCount();
+}
+
+void Tetris::GetClearedLines(int *cleared_line_y)
+{
+    field.GetClearedLines(cleared_line_y);
 }
 
 int Tetris::GetClearingTimer()

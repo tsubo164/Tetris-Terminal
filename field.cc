@@ -2,25 +2,15 @@
 #include "cell.h"
 
 #include <algorithm>
-#include <cstdint>
 #include <cassert>
-#include <array>
 
-struct Line {
-    std::array<char, FIELD_WIDTH> elem {0};
-    bool is_cleared = false;
-    int8_t count = 0;
+Field::Field()
+{
+}
 
-    Line () {}
-    const char operator[](int i) const { return elem[i]; }
-    char &operator[](int i) { return elem[i]; }
-
-    bool IsFilled() const { return count == FIELD_WIDTH; }
-    void MarkCleared() { is_cleared = true; }
-};
-
-static std::array<Line, FIELD_HEIGHT> lines;
-static int cleared_line_count = 0;
+Field::~Field()
+{
+}
 
 bool is_inside_field(Point pos)
 {
@@ -33,7 +23,7 @@ bool is_inside_field(Point pos)
     return true;
 }
 
-int GetFieldCellKind(Point pos)
+int Field::GetFieldCellKind(Point pos)
 {
     if (!is_inside_field(pos))
         return B;
@@ -41,7 +31,7 @@ int GetFieldCellKind(Point pos)
     return lines[pos.y][pos.x];
 }
 
-void SetFieldCellKind(Point pos, int kind)
+void Field::SetFieldCellKind(Point pos, int kind)
 {
     assert(IsValidCell(kind));
 
@@ -60,12 +50,12 @@ void SetFieldCellKind(Point pos, int kind)
     }
 }
 
-int GetClearedLineCount()
+int Field::GetClearedLineCount()
 {
     return cleared_line_count;
 }
 
-void GetClearedLines(int *cleared_line_y)
+void Field::GetClearedLines(int *cleared_line_y)
 {
     int index = 0;
     int y = 0;
@@ -80,7 +70,7 @@ void GetClearedLines(int *cleared_line_y)
     }
 }
 
-void ClearLines()
+void Field::ClearLines()
 {
     auto it = std::remove_if(
             lines.begin(),

@@ -1,5 +1,4 @@
 #include "field.h"
-#include "cell.h"
 
 #include <algorithm>
 #include <cassert>
@@ -28,31 +27,27 @@ int Field::GetFieldCellKind(Point pos) const
     if (!is_inside_field(pos))
         return B;
 
-    return lines[pos.y][pos.x];
+    return lines_[pos.y][pos.x];
 }
 
-void Field::SetFieldCellKind(Point pos, int kind)
+void Field::SetPiece(const Piece &piece)
 {
-    assert(IsValidCell(kind));
+    for (auto pos: piece.cells) {
+        const int x = pos.x, y = pos.y;
 
-    if (!is_inside_field(pos))
-        return;
+        assert(IsEmptyCell(lines_[y][x]));
+        assert(is_inside_field(pos));
 
-    const int x = pos.x, y = pos.y;
+        lines_[y].SetCell(x, piece.kind);
 
-    assert(IsEmptyCell(lines[y][x]));
-    lines[y][x] = kind;
-    lines[y].count++;
-
-    if (lines[y].IsFilled()) {
-        lines[y].MarkCleared();
-        cleared_line_count++;
+        if (lines_[y].IsFilled())
+            cleared_line_count_++;
     }
 }
 
 int Field::GetClearedLineCount() const
 {
-    return cleared_line_count;
+    return cleared_line_count_;
 }
 
 void Field::GetClearedLines(int *cleared_line_y) const
@@ -60,7 +55,7 @@ void Field::GetClearedLines(int *cleared_line_y) const
     int index = 0;
     int y = 0;
 
-    for (auto line = lines.begin(); line != lines.end(); ++line, ++y) {
+    for (auto line = lines_.begin(); line != lines_.end(); ++line, ++y) {
         if (line->is_cleared) {
             cleared_line_y[index++] = y;
 
@@ -73,11 +68,11 @@ void Field::GetClearedLines(int *cleared_line_y) const
 void Field::ClearLines()
 {
     auto it = std::remove_if(
-            lines.begin(),
-            lines.end(),
+            lines_.begin(),
+            lines_.end(),
             [](const Line &line) { return line.is_cleared; });
 
-    std::fill(it, lines.end(), Line());
+    std::fill(it, lines_.end(), Line());
 
-    cleared_line_count = 0;
+    cleared_line_count_ = 0;
 }

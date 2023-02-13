@@ -104,9 +104,7 @@ void Tetris::UpdateFrame()
 
     if (lock_down_counter == 0) {
         // end lock down
-        const Piece piece = GetCurrentPiece();
-        for (auto pos: piece.cells)
-            field_.SetFieldCellKind(pos, piece.kind);
+        field_.SetPiece(GetCurrentPiece());
         reset_lock_down_counter();
 
         if (GetClearedLineCount() > 0) {

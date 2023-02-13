@@ -109,3 +109,18 @@ Piece GetPiece(int kind, int rotation)
 
     return piece_states[kind][rotation];
 }
+
+bool IsEmptyCell(int kind)
+{
+    return kind == E;
+}
+
+bool IsSolidCell(int kind)
+{
+    return kind > E && kind < CELL_END;
+}
+
+bool IsValidCell(int kind)
+{
+    return IsEmptyCell(kind) || IsSolidCell(kind);
+}

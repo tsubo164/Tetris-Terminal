@@ -2,6 +2,7 @@
 #define FIELD_H
 
 #include "point.h"
+#include "piece.h"
 #include <cstdint>
 #include <array>
 
@@ -13,12 +14,13 @@ public:
     Field();
     ~Field();
 
+    // Cell
     int GetFieldCellKind(Point pos) const;
-    void SetFieldCellKind(Point pos, int kind);
+    void SetPiece(const Piece &piece);
 
+    // Cleared lines
     int GetClearedLineCount() const;
     void GetClearedLines(int *cleared_line_y) const;
-
     void ClearLines();
 
 private:
@@ -33,10 +35,22 @@ private:
 
         bool IsFilled() const { return count == FIELD_WIDTH; }
         void MarkCleared() { is_cleared = true; }
+
+        void SetCell(int x, int kind)
+        {
+            assert(IsValidCell(kind));
+            assert(IsEmptyCell((*this)[x]));
+
+            (*this)[x] = kind;
+            count++;
+
+            if (IsFilled())
+                MarkCleared();
+        }
     };
 
-    std::array<Line, FIELD_HEIGHT> lines;
-    int cleared_line_count = 0;
+    std::array<Line, FIELD_HEIGHT> lines_;
+    int cleared_line_count_ = 0;
 };
 
 #endif

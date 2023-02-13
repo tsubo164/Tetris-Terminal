@@ -1,5 +1,6 @@
 #include "tetris.h"
 
+#include <locale.h>
 #include <ncurses.h>
 #include <iostream>
 #include <string>
@@ -85,20 +86,29 @@ static void draw_str(int x, int y, const char *str)
     mvaddstr(SCREEN_HEIGHT - y - 1, x, str);
 }
 
-static char get_cell_symbol(int cell)
+static void draw_square(int x, int y, int kind)
 {
-    switch (cell) {
-        case E: return '.';
-        case I: return 'I';
-        case O: return 'O';
-        case S: return 'S';
-        case Z: return 'Z';
-        case J: return 'J';
-        case L: return 'L';
-        case T: return 'T';
-        case B: return 'B';
-        default: return ' ';
+    const char *s = ".";
+
+    switch (kind) {
+        case E:
+            s = ".";
+            break;
+
+        case I: case O: case S: case Z: case J: case L: case T:
+            s = "\u25A3";
+            break;
+
+        case B:
+            s = "\u25A2";
+            break;
+
+        default:
+            s = " ";
+            break;
     }
+
+    mvprintw(SCREEN_HEIGHT - y - 1, x, s);
 }
 
 static const int DEFAULT_COLOR_PAIR = CELL_END;
@@ -113,7 +123,7 @@ static void draw_cell(int x, int y, int kind)
     else
         attrset(COLOR_PAIR(DEFAULT_COLOR_PAIR));
 
-    draw_char(x, y, get_cell_symbol(kind));
+    draw_square(x, y, kind);
 
     attrset(0);
 }
@@ -240,6 +250,7 @@ static void initialize_colors()
 
 static int initialize_screen()
 {
+    setlocale(LC_ALL, "");
     initscr();
     cbreak();
     noecho();

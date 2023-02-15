@@ -9,7 +9,8 @@
 
 static int initialize_screen();
 static void finalize_screen();
-static void input_key();
+//static void input_key();
+static int input_key2();
 static void render();
 
 static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
@@ -46,10 +47,12 @@ int main(int argc, char **argv)
     while (tetris.IsPlaying()) {
 
         // Input
-        input_key();
+        //input_key();
+        const int action = input_key2();
 
         // Game logic
-        tetris.UpdateFrame();
+        //tetris.UpdateFrame();
+        tetris.UpdateFrame(action);
 
         // Rednering
         render();
@@ -184,6 +187,10 @@ static void draw_info()
     draw_str(20, 11, fpsstr.c_str());
     draw_str(20, 10, "Press 'Q' to quit");
 
+    const std::string lock_timer = "Lock Delay Timer: " +
+        std::to_string(tetris.GetLockDelayTimer());
+    draw_str(20, 8, lock_timer.c_str());
+
     for (int i = 0; i < 14; i++) {
         const int kind = tetris.GetPieceKindList(i);
         draw_str(14 + 2 * i, 5, std::to_string(kind).c_str());
@@ -269,6 +276,7 @@ static void finalize_screen()
     endwin();
 }
 
+/*
 static void input_key()
 {
     const int key = getch();
@@ -297,4 +305,38 @@ static void input_key()
     default:
         break;
     }
+}
+*/
+
+static int input_key2()
+{
+    const int key = getch();
+    int action = 0;
+
+    switch (key) {
+    case 'd': action = ROT_LEFT; break;
+    case 'f': action = ROT_RIGHT; break;
+    case 'h': action = MOV_LEFT; break;
+    case 'l': action = MOV_RIGHT; break;
+    case 'k': action = MOV_UP; break;
+    case 'j': action = MOV_DOWN; break;
+
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+        tetris.ChangeTetrominoKind(key - '1' + 1);
+        break;
+
+    case 'r':
+        frame = 0;
+        tetris.PlayGame();
+        break;
+
+    case 'q':
+        tetris.QuitGame();
+        break;
+
+    default:
+        break;
+    }
+
+    return action;
 }

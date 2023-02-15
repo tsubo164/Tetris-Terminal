@@ -124,6 +124,133 @@ void Tetris::UpdateFrame()
     frame++;
 }
 
+void Tetris::update_piece(int action, bool &has_moved, bool &hit_floor)
+{
+    Tetromino &original = tetromino_;
+    Tetromino moved = original;
+
+    // Gravity drop
+    drop_ -= gravity_;
+
+    // Move
+    if (action & MOV_LEFT)
+        moved.pos.x--;
+
+    if (action & MOV_RIGHT)
+        moved.pos.x++;
+
+    if ((action & MOV_UP) && IsDebugMode())
+        moved.pos.y++;
+
+    if (action & MOV_DOWN)
+        drop_ -= 60./60;
+
+    if (drop_ < -1) {
+        moved.pos.y--;
+        drop_ += 1;
+    }
+
+    // Test translation
+    if (can_fit(moved))
+        original = moved;
+    else
+        hit_floor = moved.pos.y < original.pos.y ;
+
+    // Rot
+    if (action & ROT_LEFT)
+        moved.rotation = (original.rotation - 1 + 4) % 4;
+
+    if (action & ROT_RIGHT)
+        moved.rotation = (original.rotation + 1) % 4;
+
+    // Test Rotation
+    if (kick_wall(moved, original.rotation))
+        original = moved;
+
+    if ((moved.pos != original.pos) ||
+        (moved.rotation != original.rotation))
+        has_moved = true;
+    else
+        has_moved = false;
+}
+
+void Tetris::UpdateFrame(int action)
+{
+    bool has_moved = false;
+    bool hit_floor = false;
+    update_piece(action, has_moved, hit_floor);
+
+    if (has_moved) {
+        reset_lock_down_counter();
+    }
+
+    if (hit_floor) {
+        if (lock_down_counter == -1) {
+            // start lock down
+            lock_down_counter = playing_fps / 2;
+        }
+    }
+
+    if (lock_down_counter == 0) {
+        // end lock down
+        reset_lock_down_counter();
+    }
+    else if (lock_down_counter > 0) {
+        lock_down_counter--;
+    }
+
+    /*
+    if (clearing_timer > 0) {
+        clearing_timer--;
+        return;
+    }
+    else if (clearing_timer == 0) {
+        field_.ClearLines();
+        clearing_timer = -1;
+        spawn_tetromino();
+        return;
+    }
+
+    if (frame % period == 0) {
+        if (IsDebugMode())
+            return;
+
+        Tetromino moved_tetro = tetromino_;
+        moved_tetro.pos.y--;
+
+        if (can_fit(moved_tetro)) {
+            tetromino_.pos.y--;
+            reset_lock_down_counter();
+        }
+        else if (lock_down_counter == -1) {
+            // start lock down
+            lock_down_counter = playing_fps / 2;
+        }
+    }
+
+    if (lock_down_counter == 0) {
+        // end lock down
+        field_.SetPiece(GetCurrentPiece());
+        reset_lock_down_counter();
+
+        if (GetClearedLineCount() > 0) {
+            // start clear lines
+            tetromino_.kind = E;
+            clearing_timer = 20;
+        }
+        else {
+            // spawn
+            spawn_tetromino();
+        }
+    }
+    else if (lock_down_counter > 0) {
+        lock_down_counter--;
+    }
+    */
+
+    frame++;
+}
+
 int Tetris::GetFieldCellKind(Point pos) const
 {
     return field_.GetFieldCellKind(pos);
@@ -196,6 +323,11 @@ void Tetris::ChangeTetrominoKind(int kind)
         return;
 
     tetromino_.kind = kind;
+}
+
+int Tetris::GetLockDelayTimer() const
+{
+    return lock_down_counter;
 }
 
 void Tetris::reset_lock_down_counter()

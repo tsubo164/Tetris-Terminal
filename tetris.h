@@ -27,6 +27,7 @@ public:
     // Move
     void MoveTetromino(int action);
     void UpdateFrame();
+    void UpdateFrame(int action);
 
     // Field
     int GetFieldCellKind(Point pos) const;
@@ -43,6 +44,7 @@ public:
     void SetDebugMode();
     bool IsDebugMode() const;
     void ChangeTetrominoKind(int kind);
+    int GetLockDelayTimer() const;
 
 private:
     struct Tetromino {
@@ -64,6 +66,11 @@ private:
     int period = 60;
     int lock_down_counter = -1;
     int clearing_timer = -1;
+
+    float drop_ = 0;
+    float gravity_ = 1./60;
+
+    void update_piece(int action, bool &has_moved, bool &hit_floor);
 
     void reset_lock_down_counter();
     bool can_fit(const Tetromino &tet);

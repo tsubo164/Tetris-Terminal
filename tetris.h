@@ -23,6 +23,7 @@ public:
     void PlayGame();
     void QuitGame();
     bool IsPlaying() const;
+    bool IsGameOver() const;
 
     // Tick Game
     void UpdateFrame(int action);
@@ -62,6 +63,7 @@ private:
     std::deque<int> bag_;
 
     bool is_playing_ = false;
+    bool is_game_over_ = false;
     bool debug_mode_ = false;
     int playing_fps_ = 60;
 

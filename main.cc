@@ -230,6 +230,9 @@ void render()
     draw_tetromino();
     draw_info();
 
+    if (tetris.IsGameOver())
+        draw_str(1, 11, "GAME OVER");
+
     refresh();
 }
 

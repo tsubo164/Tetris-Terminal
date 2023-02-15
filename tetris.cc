@@ -31,17 +31,29 @@ Tetris::~Tetris()
 
 void Tetris::PlayGame()
 {
+    // Pieces
     InitializePieces();
-    gravity_ = get_gravity(level_);
 
+    // Bags
     bag_.clear();
     for (int i = 0; i < 2; i++)
         generate_bag();
 
-    spawn_tetromino();
+    // Field
+    field_.Clear();
+    field_.SetTopHole(2, 7);
 
-    frame_ = 1;
+    // Game
     is_playing_ = true;
+    is_game_over_ = false;
+    frame_ = 1;
+
+    gravity_ = get_gravity(1);
+    total_line_count_ = 0;
+    level_ = 1;
+
+    // Start
+    spawn_tetromino();
 }
 
 void Tetris::QuitGame()
@@ -52,6 +64,11 @@ void Tetris::QuitGame()
 bool Tetris::IsPlaying() const
 {
     return is_playing_;
+}
+
+bool Tetris::IsGameOver() const
+{
+    return is_game_over_;
 }
 
 bool Tetris::move_piece(int action)
@@ -111,18 +128,22 @@ bool Tetris::has_landed()
 
 void Tetris::UpdateFrame(int action)
 {
+    if (is_game_over_)
+        return;
+
     // Clears lines
     if (clearing_timer_ > 0) {
         clearing_timer_--;
         return;
     }
     else if (clearing_timer_ == 0) {
+        // lines, level, gravity
         total_line_count_ += field_.GetClearedLineCount();
         if (total_line_count_ >= 5 * level_)
             level_++;
         gravity_ = get_gravity(level_);
+
         field_.ClearLines();
-        clearing_timer_ = -1;
         spawn_tetromino();
         return;
     }
@@ -142,8 +163,6 @@ void Tetris::UpdateFrame(int action)
         start_lock_delay_timer();
 
     if (lock_delay_timer_ == 0 && landed) {
-        // end lock down
-        reset_lock_delay_timer();
         field_.SetPiece(GetCurrentPiece());
 
         if (GetClearedLineCount() > 0) {
@@ -347,17 +366,25 @@ bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
 
 void Tetris::spawn_tetromino()
 {
+    // Bag
     if (bag_.size() == 7)
         generate_bag();
 
     const int kind = bag_.front();
     bag_.pop_front();
 
+    // Tetromino
     tetromino_ = Tetromino();
     tetromino_.kind = kind;
     tetromino_.pos = {4, 19};
 
+    // Timers and counter
+    lock_delay_timer_ = -1;
+    clearing_timer_ = -1;
     reset_counter_ = 0;
+
+    if (!can_fit(tetromino_))
+        is_game_over_ = true;
 }
 
 void Tetris::generate_bag()

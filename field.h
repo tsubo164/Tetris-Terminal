@@ -14,9 +14,12 @@ public:
     Field();
     ~Field();
 
+    void Clear();
+
     // Cell
     int GetFieldCellKind(Point pos) const;
     void SetPiece(const Piece &piece);
+    void SetTopHole(int start_x, int end_x);
 
     // Cleared lines
     int GetClearedLineCount() const;
@@ -51,6 +54,9 @@ private:
 
     std::array<Line, FIELD_HEIGHT> lines_;
     int cleared_line_count_ = 0;
+    int hole_start_ = -1, hole_end_ = -1;
+
+    bool is_inside_hole(Point pos) const;
 };
 
 #endif

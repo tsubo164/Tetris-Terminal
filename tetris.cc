@@ -56,7 +56,7 @@ void Tetris::MoveTetromino(int action)
 
     if (can_fit(moved_tetro)) {
         tetromino_ = moved_tetro;
-        reset_lock_down_counter();
+        reset_lock_delay_timer();
     }
 
     // Rot
@@ -68,7 +68,7 @@ void Tetris::MoveTetromino(int action)
 
     if (kick_wall(moved_tetro, tetromino_.rotation)) {
         tetromino_ = moved_tetro;
-        reset_lock_down_counter();
+        reset_lock_delay_timer();
     }
 }
 
@@ -94,18 +94,18 @@ void Tetris::UpdateFrame()
 
         if (can_fit(moved_tetro)) {
             tetromino_.pos.y--;
-            reset_lock_down_counter();
+            reset_lock_delay_timer();
         }
-        else if (lock_down_counter == -1) {
+        else if (lock_delay_timer == -1) {
             // start lock down
-            lock_down_counter = playing_fps / 2;
+            lock_delay_timer = playing_fps / 2;
         }
     }
 
-    if (lock_down_counter == 0) {
+    if (lock_delay_timer == 0) {
         // end lock down
         field_.SetPiece(GetCurrentPiece());
-        reset_lock_down_counter();
+        reset_lock_delay_timer();
 
         if (GetClearedLineCount() > 0) {
             // start clear lines
@@ -117,17 +117,18 @@ void Tetris::UpdateFrame()
             spawn_tetromino();
         }
     }
-    else if (lock_down_counter > 0) {
-        lock_down_counter--;
+    else if (lock_delay_timer > 0) {
+        lock_delay_timer--;
     }
 
     frame++;
 }
 
-void Tetris::update_piece(int action, bool &has_moved, bool &hit_floor)
+bool Tetris::move_piece(int action)
 {
     Tetromino &original = tetromino_;
     Tetromino moved = original;
+    bool has_moved = false;
 
     // Gravity drop
     drop_ -= gravity_;
@@ -150,11 +151,8 @@ void Tetris::update_piece(int action, bool &has_moved, bool &hit_floor)
         drop_ += 1;
     }
 
-    // Test translation
-    if (can_fit(moved))
-        original = moved;
-    else
-        hit_floor = moved.pos.y < original.pos.y ;
+    if (moved.pos != original.pos)
+        has_moved = can_fit(moved);
 
     // Rot
     if (action & ROT_LEFT)
@@ -163,40 +161,55 @@ void Tetris::update_piece(int action, bool &has_moved, bool &hit_floor)
     if (action & ROT_RIGHT)
         moved.rotation = (original.rotation + 1) % 4;
 
-    // Test Rotation
-    if (kick_wall(moved, original.rotation))
+    if (moved.rotation != original.rotation)
+        has_moved = kick_wall(moved, original.rotation);
+
+    // Commit move
+    if (has_moved)
         original = moved;
 
-    if ((moved.pos != original.pos) ||
-        (moved.rotation != original.rotation))
-        has_moved = true;
-    else
-        has_moved = false;
+    return has_moved;
+}
+
+bool Tetris::has_landed()
+{
+    Tetromino moved = tetromino_;
+    moved.pos.y--;
+
+    return can_fit(moved) == false;
 }
 
 void Tetris::UpdateFrame(int action)
 {
-    bool has_moved = false;
-    bool hit_floor = false;
-    update_piece(action, has_moved, hit_floor);
+    const bool moved = move_piece(action);
+    const bool landed = has_landed();
 
-    if (has_moved) {
-        reset_lock_down_counter();
-    }
+    if (moved)
+        reset_lock_delay_timer();
 
-    if (hit_floor) {
-        if (lock_down_counter == -1) {
-            // start lock down
-            lock_down_counter = playing_fps / 2;
-        }
-    }
+    if (landed)
+        start_lock_delay_timer();
 
-    if (lock_down_counter == 0) {
+    if (lock_delay_timer == 0) {
         // end lock down
-        reset_lock_down_counter();
+        reset_lock_delay_timer();
+        field_.SetPiece(GetCurrentPiece());
+
+        /*
+        if (GetClearedLineCount() > 0) {
+            // start clear lines
+            tetromino_.kind = E;
+            clearing_timer = 20;
+        }
+        else {
+            // spawn
+            spawn_tetromino();
+        }
+        */
+        spawn_tetromino();
     }
-    else if (lock_down_counter > 0) {
-        lock_down_counter--;
+    else {
+        tick_lock_delay_timer();
     }
 
     /*
@@ -220,18 +233,18 @@ void Tetris::UpdateFrame(int action)
 
         if (can_fit(moved_tetro)) {
             tetromino_.pos.y--;
-            reset_lock_down_counter();
+            reset_lock_delay_timer();
         }
-        else if (lock_down_counter == -1) {
+        else if (lock_delay_timer == -1) {
             // start lock down
-            lock_down_counter = playing_fps / 2;
+            lock_delay_timer = playing_fps / 2;
         }
     }
 
-    if (lock_down_counter == 0) {
+    if (lock_delay_timer == 0) {
         // end lock down
         field_.SetPiece(GetCurrentPiece());
-        reset_lock_down_counter();
+        reset_lock_delay_timer();
 
         if (GetClearedLineCount() > 0) {
             // start clear lines
@@ -243,8 +256,8 @@ void Tetris::UpdateFrame(int action)
             spawn_tetromino();
         }
     }
-    else if (lock_down_counter > 0) {
-        lock_down_counter--;
+    else if (lock_delay_timer > 0) {
+        lock_delay_timer--;
     }
     */
 
@@ -327,12 +340,24 @@ void Tetris::ChangeTetrominoKind(int kind)
 
 int Tetris::GetLockDelayTimer() const
 {
-    return lock_down_counter;
+    return lock_delay_timer;
 }
 
-void Tetris::reset_lock_down_counter()
+void Tetris::start_lock_delay_timer()
 {
-    lock_down_counter = -1;
+    if (lock_delay_timer == -1)
+        lock_delay_timer = playing_fps / 2;
+}
+
+void Tetris::reset_lock_delay_timer()
+{
+    lock_delay_timer = -1;
+}
+
+void Tetris::tick_lock_delay_timer()
+{
+    if (lock_delay_timer > 0)
+        lock_delay_timer--;
 }
 
 bool Tetris::can_fit(const Tetromino &tet)

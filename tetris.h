@@ -64,15 +64,18 @@ private:
 
     unsigned long frame = 0;
     int period = 60;
-    int lock_down_counter = -1;
+    int lock_delay_timer = -1;
     int clearing_timer = -1;
 
     float drop_ = 0;
     float gravity_ = 1./60;
 
-    void update_piece(int action, bool &has_moved, bool &hit_floor);
+    bool move_piece(int action);
+    bool has_landed();
+    void start_lock_delay_timer();
+    void reset_lock_delay_timer();
+    void tick_lock_delay_timer();
 
-    void reset_lock_down_counter();
     bool can_fit(const Tetromino &tet);
     bool kick_wall(Tetromino &tet, int old_rotation);
     void spawn_tetromino();

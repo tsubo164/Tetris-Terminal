@@ -41,6 +41,7 @@ public:
 
     // Info
     int GetLevel() const;
+    int GetScore() const;
     int GetTotalLineCount() const;
 
     // Debug
@@ -71,6 +72,7 @@ private:
 
     int level_ = 1;
     int total_line_count_ = 0;
+    int score_ = 0;
 
     int lock_delay_timer_ = -1;
     int clearing_timer_ = -1;

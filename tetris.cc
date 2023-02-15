@@ -21,6 +21,17 @@ static float get_gravity(int level)
         return gravity_table[level];
 }
 
+static int get_score(int action)
+{
+    switch (action) {
+    case 1: return 100;
+    case 2: return 300;
+    case 3: return 500;
+    case 4: return 800;
+    default: return 0;
+    };
+}
+
 Tetris::Tetris()
 {
 }
@@ -51,6 +62,7 @@ void Tetris::PlayGame()
     gravity_ = get_gravity(1);
     total_line_count_ = 0;
     level_ = 1;
+    score_ = 0;
 
     // Start
     spawn_tetromino();
@@ -138,10 +150,12 @@ void Tetris::UpdateFrame(int action)
     }
     else if (clearing_timer_ == 0) {
         // lines, level, gravity
-        total_line_count_ += field_.GetClearedLineCount();
+        const int count = field_.GetClearedLineCount();
+        total_line_count_ += count;
         if (total_line_count_ >= 5 * level_)
             level_++;
         gravity_ = get_gravity(level_);
+        score_ += get_score(count);
 
         field_.ClearLines();
         spawn_tetromino();
@@ -233,6 +247,11 @@ Piece Tetris::GetNextPiece(int index) const
 int Tetris::GetLevel() const
 {
     return level_;
+}
+
+int Tetris::GetScore() const
+{
+    return score_;
 }
 
 int Tetris::GetTotalLineCount() const

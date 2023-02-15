@@ -181,12 +181,16 @@ static void draw_field()
 static void draw_info()
 {
     {
-        draw_str(20, 20, "LEVEL");
-        draw_str(20, 19, std::to_string(tetris.GetLevel()).c_str());
+        draw_str(20, 20, "SCORE");
+        draw_str(20, 19, std::to_string(tetris.GetScore()).c_str());
     }
     {
         draw_str(20, 17, "LINES");
         draw_str(20, 16, std::to_string(tetris.GetTotalLineCount()).c_str());
+    }
+    {
+        draw_str(20, 14, "LEVEL");
+        draw_str(20, 13, std::to_string(tetris.GetLevel()).c_str());
     }
 
     const std::string fpsstr = "fps: " + std::to_string(fps);

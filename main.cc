@@ -191,6 +191,10 @@ static void draw_info()
         std::to_string(tetris.GetLockDelayTimer());
     draw_str(20, 8, lock_timer.c_str());
 
+    const std::string reset_counter = "Reset Counter:    " +
+        std::to_string(tetris.GetResetCounter());
+    draw_str(20, 7, reset_counter.c_str());
+
     for (int i = 0; i < 14; i++) {
         const int kind = tetris.GetPieceKindList(i);
         draw_str(14 + 2 * i, 5, std::to_string(kind).c_str());

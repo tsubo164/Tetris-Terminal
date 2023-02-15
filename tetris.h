@@ -45,6 +45,7 @@ public:
     bool IsDebugMode() const;
     void ChangeTetrominoKind(int kind);
     int GetLockDelayTimer() const;
+    int GetResetCounter() const;
 
 private:
     struct Tetromino {
@@ -64,8 +65,9 @@ private:
 
     unsigned long frame = 0;
     int period = 60;
-    int lock_delay_timer = -1;
-    int clearing_timer = -1;
+    int lock_delay_timer_ = -1;
+    int clearing_timer_ = -1;
+    int reset_counter_ = -1;
 
     float drop_ = 0;
     float gravity_ = 1./60;

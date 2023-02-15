@@ -5,6 +5,22 @@
 #include <random>
 #include <array>
 
+static float get_gravity(int level)
+{
+    static const float gravity_table[21] = {
+        // level 0 - 20
+        0.0, 0.01667, 0.021017, 0.026977, 0.035256, 0.04693, 0.06361, 0.0879, 0.1236,
+        0.1775, 0.2598, 0.388, 0.59, 0.92, 1.46, 2.36, 3.91, 6.61, 11.43, 20,
+    };
+
+    if (level < 0)
+        return gravity_table[0];
+    else if (level > 20)
+        return gravity_table[20];
+    else
+        return gravity_table[level];
+}
+
 Tetris::Tetris()
 {
 }
@@ -16,6 +32,7 @@ Tetris::~Tetris()
 void Tetris::PlayGame()
 {
     InitializePieces();
+    gravity_ = get_gravity(level_);
 
     bag_.clear();
     for (int i = 0; i < 2; i++)
@@ -181,17 +198,23 @@ bool Tetris::has_landed()
 
 void Tetris::UpdateFrame(int action)
 {
+    // Clears lines
     if (clearing_timer_ > 0) {
         clearing_timer_--;
         return;
     }
     else if (clearing_timer_ == 0) {
+        total_line_count_ += field_.GetClearedLineCount();
+        if (total_line_count_ >= 5 * level_)
+            level_++;
+        gravity_ = get_gravity(level_);
         field_.ClearLines();
         clearing_timer_ = -1;
         spawn_tetromino();
         return;
     }
 
+    // Move the piece
     const bool moved = move_piece(action);
     const bool landed = has_landed();
 
@@ -205,6 +228,7 @@ void Tetris::UpdateFrame(int action)
     if (landed)
         start_lock_delay_timer();
 
+    // Test clear lines
     if (lock_delay_timer_ == 0 && landed) {
         // end lock down
         reset_lock_delay_timer();
@@ -273,6 +297,16 @@ Piece Tetris::GetNextPiece(int index) const
         kind = bag_[index];
 
     return GetPiece(kind, rotation);
+}
+
+int Tetris::GetLevel() const
+{
+    return level_;
+}
+
+int Tetris::GetTotalLineCount() const
+{
+    return total_line_count_;
 }
 
 int Tetris::GetClearingTimer() const

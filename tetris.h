@@ -40,6 +40,9 @@ public:
     Piece GetCurrentPiece() const;
     Piece GetNextPiece(int index) const;
 
+    int GetLevel() const;
+    int GetTotalLineCount() const;
+
     // Debug
     void SetDebugMode();
     bool IsDebugMode() const;
@@ -65,6 +68,10 @@ private:
 
     unsigned long frame = 0;
     int period = 60;
+
+    int level_ = 1;
+    int total_line_count_ = 0;
+
     int lock_delay_timer_ = -1;
     int clearing_timer_ = -1;
     int reset_counter_ = -1;

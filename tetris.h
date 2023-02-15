@@ -24,9 +24,7 @@ public:
     void QuitGame();
     bool IsPlaying() const;
 
-    // Move
-    void MoveTetromino(int action);
-    void UpdateFrame();
+    // Tick Game
     void UpdateFrame(int action);
 
     // Field
@@ -40,6 +38,7 @@ public:
     Piece GetCurrentPiece() const;
     Piece GetNextPiece(int index) const;
 
+    // Info
     int GetLevel() const;
     int GetTotalLineCount() const;
 
@@ -62,12 +61,11 @@ private:
 
     std::deque<int> bag_;
 
-    bool is_playing = false;
-    bool debug_mode = false;
-    int playing_fps = 60;
+    bool is_playing_ = false;
+    bool debug_mode_ = false;
+    int playing_fps_ = 60;
 
-    unsigned long frame = 0;
-    int period = 60;
+    unsigned long frame_ = 0;
 
     int level_ = 1;
     int total_line_count_ = 0;

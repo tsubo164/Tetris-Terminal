@@ -9,8 +9,7 @@
 
 static int initialize_screen();
 static void finalize_screen();
-//static void input_key();
-static int input_key2();
+static int input_key();
 static void render();
 
 static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
@@ -47,11 +46,9 @@ int main(int argc, char **argv)
     while (tetris.IsPlaying()) {
 
         // Input
-        //input_key();
-        const int action = input_key2();
+        const int action = input_key();
 
         // Game logic
-        //tetris.UpdateFrame();
         tetris.UpdateFrame(action);
 
         // Rednering
@@ -289,39 +286,7 @@ static void finalize_screen()
     endwin();
 }
 
-/*
-static void input_key()
-{
-    const int key = getch();
-
-    switch (key) {
-    case 'd': tetris.MoveTetromino(ROT_LEFT); break;
-    case 'f': tetris.MoveTetromino(ROT_RIGHT); break;
-    case 'h': tetris.MoveTetromino(MOV_LEFT); break;
-    case 'l': tetris.MoveTetromino(MOV_RIGHT); break;
-    case 'k': tetris.MoveTetromino(MOV_UP); break;
-    case 'j': tetris.MoveTetromino(MOV_DOWN); break;
-
-    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
-        tetris.ChangeTetrominoKind(key - '1' + 1);
-        break;
-
-    case 'r':
-        frame = 0;
-        tetris.PlayGame();
-        break;
-
-    case 'q':
-        tetris.QuitGame();
-        break;
-
-    default:
-        break;
-    }
-}
-*/
-
-static int input_key2()
+static int input_key()
 {
     const int key = getch();
     int action = 0;

@@ -40,111 +40,24 @@ void Tetris::PlayGame()
 
     spawn_tetromino();
 
-    frame = 1;
-    is_playing = true;
+    frame_ = 1;
+    is_playing_ = true;
 }
 
 void Tetris::QuitGame()
 {
-    is_playing = false;
+    is_playing_ = false;
 }
 
 bool Tetris::IsPlaying() const
 {
-    return is_playing;
-}
-
-void Tetris::MoveTetromino(int action)
-{
-    Tetromino moved_tetro = tetromino_;
-
-    // Move
-    if (action & MOV_LEFT)
-        moved_tetro.pos.x--;
-
-    if (action & MOV_RIGHT)
-        moved_tetro.pos.x++;
-
-    if (action & MOV_DOWN)
-        moved_tetro.pos.y--;
-
-    if ((action & MOV_UP) && IsDebugMode())
-        moved_tetro.pos.y++;
-
-    if (can_fit(moved_tetro)) {
-        tetromino_ = moved_tetro;
-        reset_lock_delay_timer();
-    }
-
-    // Rot
-    if (action & ROT_LEFT)
-        moved_tetro.rotation = (tetromino_.rotation - 1 + 4) % 4;
-
-    if (action & ROT_RIGHT)
-        moved_tetro.rotation = (tetromino_.rotation + 1) % 4;
-
-    if (kick_wall(moved_tetro, tetromino_.rotation)) {
-        tetromino_ = moved_tetro;
-        reset_lock_delay_timer();
-    }
-}
-
-void Tetris::UpdateFrame()
-{
-    if (clearing_timer_ > 0) {
-        clearing_timer_--;
-        return;
-    }
-    else if (clearing_timer_ == 0) {
-        field_.ClearLines();
-        clearing_timer_ = -1;
-        spawn_tetromino();
-        return;
-    }
-
-    if (frame % period == 0) {
-        if (IsDebugMode())
-            return;
-
-        Tetromino moved_tetro = tetromino_;
-        moved_tetro.pos.y--;
-
-        if (can_fit(moved_tetro)) {
-            tetromino_.pos.y--;
-            reset_lock_delay_timer();
-        }
-        else if (lock_delay_timer_ == -1) {
-            // start lock down
-            lock_delay_timer_ = playing_fps / 2;
-        }
-    }
-
-    if (lock_delay_timer_ == 0) {
-        // end lock down
-        field_.SetPiece(GetCurrentPiece());
-        reset_lock_delay_timer();
-
-        if (GetClearedLineCount() > 0) {
-            // start clear lines
-            tetromino_.kind = E;
-            clearing_timer_ = 20;
-        }
-        else {
-            // spawn
-            spawn_tetromino();
-        }
-    }
-    else if (lock_delay_timer_ > 0) {
-        lock_delay_timer_--;
-    }
-
-    frame++;
+    return is_playing_;
 }
 
 bool Tetris::move_piece(int action)
 {
-    Tetromino &original = tetromino_;
-    Tetromino moved = original;
+    Tetromino &current = tetromino_;
+    Tetromino moved = tetromino_;
     bool has_moved = false;
 
     // Gravity drop
@@ -168,22 +81,22 @@ bool Tetris::move_piece(int action)
         drop_ += 1;
     }
 
-    if (moved.pos != original.pos)
+    if (moved.pos != current.pos)
         has_moved = can_fit(moved);
 
     // Rot
     if (action & ROT_LEFT)
-        moved.rotation = (original.rotation - 1 + 4) % 4;
+        moved.rotation = (current.rotation - 1 + 4) % 4;
 
     if (action & ROT_RIGHT)
-        moved.rotation = (original.rotation + 1) % 4;
+        moved.rotation = (current.rotation + 1) % 4;
 
-    if (moved.rotation != original.rotation)
-        has_moved = kick_wall(moved, original.rotation);
+    if (moved.rotation != current.rotation)
+        has_moved = kick_wall(moved, current.rotation);
 
     // Commit move
     if (has_moved)
-        original = moved;
+        current = moved;
 
     return has_moved;
 }
@@ -228,7 +141,6 @@ void Tetris::UpdateFrame(int action)
     if (landed)
         start_lock_delay_timer();
 
-    // Test clear lines
     if (lock_delay_timer_ == 0 && landed) {
         // end lock down
         reset_lock_delay_timer();
@@ -248,7 +160,7 @@ void Tetris::UpdateFrame(int action)
         tick_lock_delay_timer();
     }
 
-    frame++;
+    frame_++;
 }
 
 int Tetris::GetFieldCellKind(Point pos) const
@@ -316,12 +228,12 @@ int Tetris::GetClearingTimer() const
 
 void Tetris::SetDebugMode()
 {
-    debug_mode = true;
+    debug_mode_ = true;
 }
 
 bool Tetris::IsDebugMode() const
 {
-    return debug_mode;
+    return debug_mode_;
 }
 
 void Tetris::ChangeTetrominoKind(int kind)
@@ -348,7 +260,7 @@ int Tetris::GetResetCounter() const
 void Tetris::start_lock_delay_timer()
 {
     if (lock_delay_timer_ == -1)
-        lock_delay_timer_ = playing_fps / 2;
+        lock_delay_timer_ = playing_fps_ / 2;
 }
 
 void Tetris::reset_lock_delay_timer()

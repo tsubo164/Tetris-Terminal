@@ -17,6 +17,7 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 // Counters
 static double fps = 0.0;
 static unsigned long frame = 0;
+static bool is_drawing_ghost = false;
 
 Tetris tetris;
 
@@ -108,6 +109,9 @@ static void draw_square(int x, int y, int kind)
             break;
     }
 
+    if (is_drawing_ghost)
+        s = "\u25A2";
+
     mvprintw(SCREEN_HEIGHT - y - 1, x, s);
 }
 
@@ -132,9 +136,26 @@ static void draw_tetromino()
 {
     const Piece piece = tetris.GetCurrentPiece();
 
+    if (IsEmptyCell(piece.kind))
+        return;
+
     for (auto pos: piece.cells) {
         draw_cell(pos.x + 1, pos.y + 1, piece.kind);
     }
+}
+
+static void draw_ghost()
+{
+    const Piece piece = tetris.GetGhostPiece();
+
+    if (IsEmptyCell(piece.kind))
+        return;
+
+    is_drawing_ghost = true;
+    for (auto pos: piece.cells) {
+        draw_cell(pos.x + 1, pos.y + 1, piece.kind);
+    }
+    is_drawing_ghost = false;
 }
 
 static void draw_field()
@@ -231,6 +252,7 @@ void render()
     erase();
 
     draw_field();
+    draw_ghost();
     draw_tetromino();
     draw_info();
 

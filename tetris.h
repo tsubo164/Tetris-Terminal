@@ -38,6 +38,7 @@ public:
     // Piece
     int GetPieceKindList(int index) const;
     Piece GetCurrentPiece() const;
+    Piece GetGhostPiece() const;
     Piece GetNextPiece(int index) const;
 
     // Info
@@ -60,6 +61,7 @@ private:
     };
 
     Tetromino tetromino_;
+    Tetromino ghost_;
     Field field_;
 
     std::deque<int> bag_;

@@ -195,8 +195,13 @@ void Tetris::UpdateFrame(int action)
         }
     }
 
-    bool landed = has_landed();
+    // Ghost
+    ghost_ = tetromino_;
+    drop_piece(ghost_);
+    if (ghost_.pos == tetromino_.pos)
+        ghost_.kind = E;
 
+    bool landed = has_landed();
     if (landed)
         start_lock_delay_timer();
 
@@ -249,6 +254,16 @@ Piece Tetris::GetCurrentPiece() const
 
     for (auto &pos: piece.cells)
         pos += tetromino_.pos;
+
+    return piece;
+}
+
+Piece Tetris::GetGhostPiece() const
+{
+    Piece piece = GetPiece(ghost_.kind, ghost_.rotation);
+
+    for (auto &pos: piece.cells)
+        pos += ghost_.pos;
 
     return piece;
 }

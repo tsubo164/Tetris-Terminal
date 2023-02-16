@@ -20,7 +20,7 @@ static unsigned long frame = 0;
 static bool is_drawing_ghost = false;
 
 Tetris tetris;
-
+Point global_offset = {1, 1};
 
 int main(int argc, char **argv)
 {
@@ -77,14 +77,36 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static void draw_char(int x, int y, char ch)
-{
-    mvaddch(SCREEN_HEIGHT - y - 1, x, ch);
-}
-
 static void draw_str(int x, int y, const char *str)
 {
-    mvaddstr(SCREEN_HEIGHT - y - 1, x, str);
+    const int X = x + global_offset.x;
+    const int Y = y + global_offset.y;
+
+    mvprintw(SCREEN_HEIGHT - Y - 1, X, str);
+}
+
+static void draw_int(int x, int y, int number)
+{
+    static char buf[64] = {'\0'};
+
+    sprintf(buf, "%5d", number);
+    draw_str(x, y, buf);
+}
+
+static void draw_int(int number)
+{
+    static char buf[64] = {'\0'};
+
+    sprintf(buf, "%3d", number);
+    addstr(buf);
+}
+
+static void draw_flt(int x, int y, float number)
+{
+    static char buf[64] = {'\0'};
+
+    sprintf(buf, "%g", number);
+    draw_str(x, y, buf);
 }
 
 static void draw_square(int x, int y, int kind)
@@ -112,7 +134,7 @@ static void draw_square(int x, int y, int kind)
     if (is_drawing_ghost)
         s = "\u25A2";
 
-    mvprintw(SCREEN_HEIGHT - y - 1, x, s);
+    draw_str(x, y, s);
 }
 
 static const int DEFAULT_COLOR_PAIR = CELL_END;
@@ -140,7 +162,7 @@ static void draw_tetromino()
         return;
 
     for (auto pos: piece.cells) {
-        draw_cell(pos.x + 1, pos.y + 1, piece.kind);
+        draw_cell(pos.x, pos.y, piece.kind);
     }
 }
 
@@ -153,28 +175,40 @@ static void draw_ghost()
 
     is_drawing_ghost = true;
     for (auto pos: piece.cells) {
-        draw_cell(pos.x + 1, pos.y + 1, piece.kind);
+        draw_cell(pos.x, pos.y, piece.kind);
     }
     is_drawing_ghost = false;
 }
 
+static void draw_borders()
+{
+    for (int y = 0; y < FIELD_HEIGHT; y++) {
+        // Side borders
+        draw_cell(-1, y, B);
+        draw_cell(FIELD_WIDTH, y, B);
+    }
+    for (int x = -1; x < FIELD_WIDTH + 1; x++) {
+        {
+            // Bottom border
+            const int y = -1;
+            const int kind = tetris.GetFieldCellKind(Point(x, y));
+            draw_cell(x, y, kind);
+        }
+        {
+            // Top border
+            const int y = FIELD_HEIGHT;
+            const int kind = tetris.GetFieldCellKind(Point(x, y));
+            draw_cell(x, y, kind);
+        }
+    }
+}
+
 static void draw_field()
 {
-    // Borders
-    for (int y = 0; y < FIELD_HEIGHT; y++) {
-        draw_cell(0, y + 1, B);
-        draw_cell(FIELD_WIDTH + 1, y + 1, B);
-    }
-    for (int x = 0; x < FIELD_WIDTH + 2; x++) {
-        draw_cell(x, 0, B);
-        draw_cell(x, FIELD_HEIGHT + 1, (x < 3 || x > 8) ? B : E);
-    }
-
-    // Field
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = tetris.GetFieldCellKind(Point(x, y));
-            draw_cell(x + 1, y + 1, kind);
+            draw_cell(x, y, kind);
         }
     }
 
@@ -194,7 +228,7 @@ static void draw_field()
         const int cleared_y = cleared_lines[i];
 
         for (int x = erase; x < 10 - erase; x++) {
-            draw_char(x + 1, cleared_y + 1, ' ');
+            draw_str(x, cleared_y, " ");
         }
     }
 }
@@ -202,37 +236,37 @@ static void draw_field()
 static void draw_info()
 {
     {
-        draw_str(20, 20, "SCORE");
-        draw_str(20, 19, std::to_string(tetris.GetScore()).c_str());
+        int x = 19, y = 19;
+
+        draw_str(x, y--, "SCORE");
+        draw_int(x, y--, tetris.GetScore());
+
+        y--;
+        draw_str(x, y--, "LINES");
+        draw_int(x, y--, tetris.GetTotalLineCount());
+
+        y--;
+        draw_str(x, y--, "LEVEL");
+        draw_int(x, y--, tetris.GetLevel());
+
+        y--;
+        draw_str(x, y--, "FPS");
+        draw_flt(x, y--, fps);
+
+        y--;
+        draw_str(x, y--, "Q: Quit");
+        draw_str(x, y--, "R: Reset");
+        draw_str(x, y--, "H: Move Left");
+        draw_str(x, y--, "L: Move Right");
+        draw_str(x, y--, "J: Sof Drop");
+        draw_str(x, y--, "M: Hard Drop");
+        draw_str(x, y--, "D: Rotate Left");
+        draw_str(x, y--, "F: Rotate Right");
     }
     {
-        draw_str(20, 17, "LINES");
-        draw_str(20, 16, std::to_string(tetris.GetTotalLineCount()).c_str());
-    }
-    {
-        draw_str(20, 14, "LEVEL");
-        draw_str(20, 13, std::to_string(tetris.GetLevel()).c_str());
-    }
+        int x = 13, y = 19;
 
-    const std::string fpsstr = "fps: " + std::to_string(fps);
-    draw_str(20, 11, fpsstr.c_str());
-    draw_str(20, 10, "Press 'Q' to quit");
-
-    const std::string lock_timer = "Lock Delay Timer: " +
-        std::to_string(tetris.GetLockDelayTimer());
-    draw_str(20, 8, lock_timer.c_str());
-
-    const std::string reset_counter = "Reset Counter:    " +
-        std::to_string(tetris.GetResetCounter());
-    draw_str(20, 7, reset_counter.c_str());
-
-    for (int i = 0; i < 14; i++) {
-        const int kind = tetris.GetPieceKindList(i);
-        draw_str(14 + 2 * i, 5, std::to_string(kind).c_str());
-    }
-    {
-        draw_str(15, 20, "NEXT");
-        const Point start = {14, 5};
+        draw_str(x, y, "NEXT");
 
         for (int i = 0; i < 14; i++) {
             const Piece next = tetris.GetNextPiece(i);
@@ -241,9 +275,28 @@ static void draw_info()
                 continue;
 
             for (const auto &pos: next.cells) {
-                draw_cell(16 + pos.x, 18 + pos.y - i * 3, next.kind);
+                draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
             }
         }
+    }
+}
+
+static void draw_debug()
+{
+    if (!tetris.IsDebugMode())
+        return;
+
+    int x = 0, y = -3;
+    draw_str(x, y--, "[DEBUG]");
+    draw_str(x, y--, "Lock Delay Timer:");
+    draw_int(tetris.GetLockDelayTimer());
+    draw_str(x, y--, "Reset Counter:   ");
+    draw_int(tetris.GetResetCounter());
+
+    draw_str(x, y, "Next Piece Kinds: ");
+    for (int i = 0; i < 14; i++) {
+        const int kind = tetris.GetPieceKindList(i);
+        draw_str(x + 18 + i, y, std::to_string(kind).c_str());
     }
 }
 
@@ -251,13 +304,15 @@ void render()
 {
     erase();
 
+    draw_borders();
     draw_field();
     draw_ghost();
     draw_tetromino();
     draw_info();
+    draw_debug();
 
     if (tetris.IsGameOver())
-        draw_str(1, 11, "GAME OVER");
+        draw_str(0, 10, "GAME OVER");
 
     refresh();
 }

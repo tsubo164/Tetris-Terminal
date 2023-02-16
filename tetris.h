@@ -7,12 +7,13 @@
 #include <deque>
 
 enum TetrominoAction {
-    MOV_RIGHT = 1 << 0,
-    MOV_LEFT  = 1 << 1,
-    MOV_UP    = 1 << 2,
-    MOV_DOWN  = 1 << 3,
-    ROT_RIGHT = 1 << 4,
-    ROT_LEFT  = 1 << 5,
+    MOV_RIGHT     = 1 << 0,
+    MOV_LEFT      = 1 << 1,
+    MOV_UP        = 1 << 2,
+    MOV_DOWN      = 1 << 3,
+    MOV_HARDDROP  = 1 << 4,
+    ROT_RIGHT     = 1 << 5,
+    ROT_LEFT      = 1 << 6,
 };
 
 class Tetris {
@@ -81,6 +82,7 @@ private:
     float drop_ = 0;
     float gravity_ = 1./60;
 
+    bool drop_piece(Tetromino &tet);
     bool move_piece(int action);
     bool has_landed();
     void start_lock_delay_timer();

@@ -83,6 +83,23 @@ bool Tetris::IsGameOver() const
     return is_game_over_;
 }
 
+bool Tetris::drop_piece(Tetromino &tet)
+{
+    Tetromino &current = tet;
+    Tetromino moved = tet;
+    bool has_moved = false;
+
+    do {
+        moved.pos.y--;
+    } while (can_fit(moved));
+
+    has_moved = ++moved.pos.y != current.pos.y;
+    if (has_moved)
+        current = moved;
+
+    return has_moved;
+}
+
 bool Tetris::move_piece(int action)
 {
     Tetromino &current = tetromino_;
@@ -163,15 +180,22 @@ void Tetris::UpdateFrame(int action)
     }
 
     // Move the piece
-    const bool moved = move_piece(action);
-    const bool landed = has_landed();
+    if (action &MOV_HARDDROP) {
+        drop_piece(tetromino_);
+        lock_delay_timer_ = 0;
+    }
+    else {
+        const bool moved = move_piece(action);
 
-    if (moved) {
-        if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
-            reset_lock_delay_timer();
-            reset_counter_++;
+        if (moved) {
+            if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
+                reset_lock_delay_timer();
+                reset_counter_++;
+            }
         }
     }
+
+    bool landed = has_landed();
 
     if (landed)
         start_lock_delay_timer();

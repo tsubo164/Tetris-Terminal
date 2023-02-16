@@ -305,6 +305,7 @@ static int input_key()
     case 'l': action = MOV_RIGHT; break;
     case 'k': action = MOV_UP; break;
     case 'j': action = MOV_DOWN; break;
+    case 'm': action = MOV_HARDDROP; break;
 
     case '1': case '2': case '3': case '4': case '5': case '6': case '7':
         tetris.ChangeTetrominoKind(key - '1' + 1);

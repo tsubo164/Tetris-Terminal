@@ -106,7 +106,7 @@ bool Tetris::drop_piece(Tetromino &tet)
 
     do {
         moved.pos.y--;
-    } while (can_fit(moved));
+    } while (moved.CanFit(field_));
 
     has_moved = ++moved.pos.y != current.pos.y;
     if (has_moved)
@@ -143,7 +143,7 @@ bool Tetris::move_piece(int action)
     }
 
     if (moved.pos != current.pos)
-        has_moved = can_fit(moved);
+        has_moved = moved.CanFit(field_);
 
     // Rot
     if (action & ROT_LEFT)
@@ -167,7 +167,7 @@ bool Tetris::has_landed()
     Tetromino moved = tetromino_;
     moved.pos.y--;
 
-    return can_fit(moved) == false;
+    return moved.CanFit(field_) == false;
 }
 
 void Tetris::UpdateFrame(int action)
@@ -402,20 +402,6 @@ void Tetris::tick_lock_delay_timer()
         lock_delay_timer_--;
 }
 
-bool Tetris::can_fit(const Tetromino &tet)
-{
-    for (int i = 0; i < 4; i++) {
-        const Point local = GetPiece(tet.kind, tet.rotation).cells[i];
-        const Point field = tet.pos + local;
-        const int field_cell = GetFieldCellKind(field);
-
-        if (field_cell)
-            return false;
-    }
-
-    return true;
-}
-
 // TTC's super rotation system.
 // https://tetris.wiki/Super_Rotation_System
 static const Point offset_table_jlstz [4][5] = {
@@ -465,7 +451,7 @@ bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
         Tetromino test = tet;
         test.pos += offset0 - offset1;
 
-        if (can_fit(test)) {
+        if (test.CanFit(field_)) {
             tet.pos = test.pos;
             return true;
         }
@@ -483,9 +469,7 @@ void Tetris::spawn_tetromino()
     bag_.pop_front();
 
     // Tetromino
-    tetromino_ = Tetromino();
-    tetromino_.kind = kind;
-    tetromino_.pos = {4, 19};
+    tetromino_ = Tetromino(kind, Point(4, 19));
 
     // Timers and counter
     lock_delay_timer_ = -1;
@@ -495,7 +479,7 @@ void Tetris::spawn_tetromino()
     // Hold
     is_hold_available_ = true;
 
-    if (!can_fit(tetromino_))
+    if (!tetromino_.CanFit(field_))
         is_game_over_ = true;
 }
 

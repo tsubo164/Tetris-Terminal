@@ -1,6 +1,7 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
+#include "tetromino.h"
 #include "point.h"
 #include "piece.h"
 #include "field.h"
@@ -60,12 +61,6 @@ public:
     int GetResetCounter() const;
 
 private:
-    struct Tetromino {
-        int kind;
-        int rotation;
-        Point pos;
-    };
-
     Tetromino tetromino_;
     Tetromino ghost_;
     Tetromino hold_;
@@ -102,7 +97,6 @@ private:
     void reset_lock_delay_timer();
     void tick_lock_delay_timer();
 
-    bool can_fit(const Tetromino &tet);
     bool kick_wall(Tetromino &tet, int old_rotation);
     void spawn_tetromino();
 

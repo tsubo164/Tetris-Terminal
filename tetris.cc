@@ -144,6 +144,8 @@ bool Tetris::move_piece(int action)
 
     if (moved.pos != current.pos)
         has_moved = moved.CanFit(field_);
+    // TODO commit move before rotation
+    // there might be a situation it can move but not rotate
 
     // Rot
     if (action & ROT_LEFT)
@@ -153,7 +155,7 @@ bool Tetris::move_piece(int action)
         moved.rotation = (current.rotation + 1) % 4;
 
     if (moved.rotation != current.rotation)
-        has_moved = kick_wall(moved, current.rotation);
+        has_moved = moved.KickWall(field_, current.rotation);
 
     // Commit move
     if (has_moved)
@@ -400,63 +402,6 @@ void Tetris::tick_lock_delay_timer()
 {
     if (lock_delay_timer_ > 0)
         lock_delay_timer_--;
-}
-
-// TTC's super rotation system.
-// https://tetris.wiki/Super_Rotation_System
-static const Point offset_table_jlstz [4][5] = {
-    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0, 0}, {+1, 0}, {+1,-1}, { 0,+2}, {+1,+2}},
-    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0, 0}, {-1, 0}, {-1,-1}, { 0,+2}, {-1,+2}},
-};
-static const Point offset_table_i [4][5] = {
-    {{ 0, 0}, {-1, 0}, {+2, 0}, {-1, 0}, {+2, 0}},
-    {{-1, 0}, { 0, 0}, { 0, 0}, { 0,+1}, { 0,-2}},
-    {{-1,+1}, {+1,+1}, {-2,+1}, {+1, 0}, {-2, 0}},
-    {{ 0,+1}, { 0,+1}, { 0,+1}, { 0,-1}, { 0,+2}},
-};
-static const Point offset_table_o [4][5] = {
-    {{ 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{ 0,-1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{-1,-1}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-    {{-1, 0}, { 0, 0}, { 0, 0}, { 0, 0}, { 0, 0}},
-};
-
-bool Tetris::kick_wall(Tetromino &tet, int old_rotation)
-{
-    const int new_rotation = tet.rotation;
-    const Point *offsets0 = nullptr;
-    const Point *offsets1 = nullptr;
-
-    // Pick up offset data based on tetromino_ kind.
-    if (tet.kind == I) {
-        offsets0 = offset_table_i[old_rotation];
-        offsets1 = offset_table_i[new_rotation];
-    }
-    else if (tet.kind == O) {
-        offsets0 = offset_table_o[old_rotation];
-        offsets1 = offset_table_o[new_rotation];
-    }
-    else {
-        offsets0 = offset_table_jlstz[old_rotation];
-        offsets1 = offset_table_jlstz[new_rotation];
-    }
-
-    // Tests against 5 offsets.
-    for (int i = 0; i < 5; i++) {
-        const Point offset0 = offsets0[i];
-        const Point offset1 = offsets1[i];
-
-        Tetromino test = tet;
-        test.pos += offset0 - offset1;
-
-        if (test.CanFit(field_)) {
-            tet.pos = test.pos;
-            return true;
-        }
-    }
-    return false;
 }
 
 void Tetris::spawn_tetromino()

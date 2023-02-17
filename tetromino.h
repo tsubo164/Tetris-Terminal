@@ -11,6 +11,7 @@ public:
     ~Tetromino();
 
     bool CanFit(const Field &field) const;
+    bool KickWall(const Field &field, int old_rotation);
 
     int kind = E;
     int rotation = 0;

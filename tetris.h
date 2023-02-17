@@ -97,9 +97,7 @@ private:
     void reset_lock_delay_timer();
     void tick_lock_delay_timer();
 
-    bool kick_wall(Tetromino &tet, int old_rotation);
     void spawn_tetromino();
-
     void generate_bag();
 };
 

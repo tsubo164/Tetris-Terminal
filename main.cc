@@ -18,7 +18,6 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 static double fps = 0.0;
 static unsigned long frame = 0;
 static bool is_drawing_ghost = false;
-static int preview_count = 1;
 
 Tetris tetris;
 Point global_offset = {1, 1};
@@ -270,28 +269,32 @@ static void draw_info()
 
         draw_str(x, y, "NEXT");
 
-        for (int i = 0; i < 14; i++) {
-            const Piece next = tetris.GetNextPiece(i);
+        if (!tetris.IsPaused()) {
+            for (int i = 0; i < 14; i++) {
+                const Piece next = tetris.GetNextPiece(i);
 
-            if (next.kind == E)
-                continue;
+                if (next.kind == E)
+                    continue;
 
-            for (const auto &pos: next.cells) {
-                draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
+                for (const auto &pos: next.cells) {
+                    draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
+                }
             }
         }
 
         y = 1;
 
         draw_str(x, y, "HOLD");
-        const Piece held = tetris.GetHoldPiece();
+        if (!tetris.IsPaused()) {
+            const Piece hold = tetris.GetHoldPiece();
 
-        if (!IsEmptyCell(held.kind)) {
-            is_drawing_ghost = !tetris.IsHoldAvailable();
-            for (const auto &pos: held.cells) {
-                draw_cell(x + pos.x + 1, y + pos.y - 2, held.kind);
+            if (!IsEmptyCell(hold.kind) && tetris.IsHoldEnable()) {
+                is_drawing_ghost = !tetris.IsHoldAvailable();
+                for (const auto &pos: hold.cells) {
+                    draw_cell(x + pos.x + 1, y + pos.y - 2, hold.kind);
+                }
+                is_drawing_ghost = false;
             }
-            is_drawing_ghost = false;
         }
     }
     {
@@ -428,8 +431,18 @@ static int input_key()
     case 'c': action = HOLD_PIECE; break;
 
     case '1':
-        preview_count = preview_count == 6 ? 1 : preview_count + 1;
-        tetris.SetPreviewCount(preview_count);
+        {
+            const int count = tetris.GetNextPieceCount();
+            tetris.SetPreviewCount(count == 6 ? 1 : count + 1);
+        }
+        break;
+
+    case '2':
+        tetris.SetGhostEnable(!tetris.IsGhostEnable());
+        break;
+
+    case '3':
+        tetris.SetHoldEnable(!tetris.IsHoldEnable());
         break;
 
     case 9: // TAB

@@ -67,6 +67,7 @@ void Tetris::PlayGame()
     score_ = 0;
 
     // Start
+    ghost_ = Tetromino();
     hold_ = Tetromino();
     spawn_tetromino();
 }
@@ -99,6 +100,26 @@ bool Tetris::IsPaused() const
 void Tetris::SetPreviewCount(int count)
 {
     preview_count_ = std::min(std::max(1, count), 6);
+}
+
+void Tetris::SetGhostEnable(bool enable)
+{
+    is_ghost_enable_ = enable;
+}
+
+void Tetris::SetHoldEnable(bool enable)
+{
+    is_hold_enable_ = enable;
+}
+
+bool Tetris::IsGhostEnable() const
+{
+    return is_ghost_enable_;
+}
+
+bool Tetris::IsHoldEnable() const
+{
+    return is_hold_enable_;
 }
 
 bool Tetris::drop_piece(Tetromino &tet)
@@ -177,6 +198,9 @@ bool Tetris::has_landed()
 
 void Tetris::hold_piece()
 {
+    if (!IsHoldEnable())
+        return;
+
     if (IsEmptyCell(hold_.kind)) {
         hold_ = Tetromino(tetromino_.kind, Point());
         spawn_tetromino();
@@ -193,6 +217,11 @@ void Tetris::hold_piece()
 
 void Tetris::update_ghost()
 {
+    if (!IsGhostEnable()) {
+        ghost_.kind = E;
+        return;
+    }
+
     ghost_ = tetromino_;
     drop_piece(ghost_);
     if (ghost_.pos == tetromino_.pos)
@@ -332,6 +361,11 @@ Piece Tetris::GetNextPiece(int index) const
         kind = bag_[index];
 
     return GetPiece(kind, rotation);
+}
+
+int Tetris::GetNextPieceCount() const
+{
+    return preview_count_;
 }
 
 bool Tetris::IsHoldAvailable() const

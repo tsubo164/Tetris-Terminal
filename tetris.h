@@ -29,7 +29,13 @@ public:
     bool IsPlaying() const;
     bool IsGameOver() const;
     bool IsPaused() const;
+
+    // Options
     void SetPreviewCount(int count);
+    void SetGhostEnable(bool enable);
+    void SetHoldEnable(bool enable);
+    bool IsGhostEnable() const;
+    bool IsHoldEnable() const;
 
     // Tick Game
     void UpdateFrame(int action);
@@ -46,6 +52,7 @@ public:
     Piece GetGhostPiece() const;
     Piece GetHoldPiece() const;
     Piece GetNextPiece(int index) const;
+    int GetNextPieceCount() const;
     bool IsHoldAvailable() const;
 
     // Info
@@ -76,6 +83,8 @@ private:
 
     int preview_count_ = 1;
     bool is_hold_available_ = false;
+    bool is_hold_enable_ = true;
+    bool is_ghost_enable_ = true;
 
     unsigned long frame_ = 0;
 

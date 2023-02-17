@@ -237,7 +237,7 @@ static void draw_field()
 static void draw_info()
 {
     {
-        int x = 19, y = 19;
+        int x = 17, y = 20;
 
         draw_str(x, y--, "SCORE");
         draw_int(x, y--, tetris.GetScore());
@@ -251,10 +251,6 @@ static void draw_info()
         draw_int(x, y--, tetris.GetLevel());
 
         y--;
-        draw_str(x, y--, "FPS");
-        draw_flt(x, y--, fps);
-
-        y--;
         draw_str(x, y--, "Q: Quit");
         draw_str(x, y--, "R: Reset");
         draw_str(x, y--, "H: Move L");
@@ -263,16 +259,14 @@ static void draw_info()
         draw_str(x, y--, "M: Hard");
         draw_str(x, y--, "D: Spin L");
         draw_str(x, y--, "F: Spin R");
+        draw_str(x, y--, "G: Hold");
         draw_str(x, y--, "ESC: Pause");
-    }
-    {
-        int x = 30, y = 7;
         draw_str(x, y--, "1: Preview #");
-        draw_str(x, y--, "2: Ghost");
-        draw_str(x, y--, "3: Hold");
+        draw_str(x, y--, "2: Toggle Ghost");
+        draw_str(x, y--, "3: Toggle Hold");
     }
     {
-        int x = 13, y = 19;
+        int x = 12, y = 20;
 
         draw_str(x, y, "NEXT");
 
@@ -286,6 +280,12 @@ static void draw_info()
                 draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
             }
         }
+    }
+    {
+        int x = 23, y = 20;
+
+        draw_str(x, y--, "FPS");
+        draw_flt(x, y--, fps);
     }
 }
 
@@ -418,11 +418,14 @@ static int input_key()
         tetris.SetPreviewCount(preview_count);
         break;
 
-              /*
-    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
-        tetris.ChangeTetrominoKind(key - '1' + 1);
+    case 'v':
+        if (tetris.IsDebugMode()) {
+            const Piece piece = tetris.GetCurrentPiece();
+            int kind = piece.kind;
+            kind = kind == 7 ? 1 : kind + 1;
+            tetris.ChangeTetrominoKind(kind);
+        }
         break;
-              */
 
     case 'r':
         frame = 0;

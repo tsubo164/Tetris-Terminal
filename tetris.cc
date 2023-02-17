@@ -191,6 +191,14 @@ void Tetris::hold_piece()
     is_hold_available_ = false;
 }
 
+void Tetris::update_ghost()
+{
+    ghost_ = tetromino_;
+    drop_piece(ghost_);
+    if (ghost_.pos == tetromino_.pos)
+        ghost_.kind = E;
+}
+
 void Tetris::UpdateFrame(int action)
 {
     if (IsGameOver() || IsPaused())
@@ -231,10 +239,7 @@ void Tetris::UpdateFrame(int action)
     }
 
     // Ghost
-    ghost_ = tetromino_;
-    drop_piece(ghost_);
-    if (ghost_.pos == tetromino_.pos)
-        ghost_.kind = E;
+    update_ghost();
 
     bool landed = has_landed();
     if (landed)

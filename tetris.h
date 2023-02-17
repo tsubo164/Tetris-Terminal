@@ -94,6 +94,7 @@ private:
     bool move_piece(int action);
     bool has_landed();
     void hold_piece();
+    void update_ghost();
 
     void start_lock_delay_timer();
     void reset_lock_delay_timer();

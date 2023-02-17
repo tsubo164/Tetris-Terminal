@@ -32,6 +32,8 @@ static int get_score(int action)
     };
 }
 
+static const Point SPAWN_POS = {4, 19};
+
 Tetris::Tetris()
 {
 }
@@ -65,6 +67,7 @@ void Tetris::PlayGame()
     score_ = 0;
 
     // Start
+    hold_ = Tetromino();
     spawn_tetromino();
 }
 
@@ -172,6 +175,22 @@ bool Tetris::has_landed()
     return moved.CanFit(field_) == false;
 }
 
+void Tetris::hold_piece()
+{
+    if (IsEmptyCell(hold_.kind)) {
+        hold_ = Tetromino(tetromino_.kind, Point());
+        spawn_tetromino();
+    }
+    else if (IsHoldAvailable()) {
+        std::swap(tetromino_.kind, hold_.kind);
+        tetromino_ = Tetromino(tetromino_.kind, SPAWN_POS);
+        hold_ = Tetromino(hold_.kind, Point());
+        reset_all_timers();
+    }
+
+    is_hold_available_ = false;
+}
+
 void Tetris::UpdateFrame(int action)
 {
     if (IsGameOver() || IsPaused())
@@ -198,25 +217,8 @@ void Tetris::UpdateFrame(int action)
 
     // Actions
     if (action & HOLD_PIECE) {
-        if (IsEmptyCell(hold_.kind)) {
-            hold_ = tetromino_;
-            hold_.rotation = 0;
-            hold_.pos = {};
-            spawn_tetromino();
-            return;
-        }
-        else if (IsHoldAvailable()) {
-            std::swap(tetromino_, hold_);
-            tetromino_.pos = {4, 19};
-            hold_.rotation = 0;
-            hold_.pos = {0, 0};
-            // Timers and counter
-            lock_delay_timer_ = -1;
-            clearing_timer_ = -1;
-            reset_counter_ = 0;
-            is_hold_available_ = false;
-            return;
-        }
+        hold_piece();
+        return;
     }
     else if (action & MOV_HARDDROP) {
         drop_piece(tetromino_);
@@ -224,13 +226,8 @@ void Tetris::UpdateFrame(int action)
     }
     else {
         const bool moved = move_piece(action);
-
-        if (moved) {
-            if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
-                reset_lock_delay_timer();
-                reset_counter_++;
-            }
-        }
+        if (moved)
+            reset_lock_delay_timer();
     }
 
     // Ghost
@@ -243,6 +240,7 @@ void Tetris::UpdateFrame(int action)
     if (landed)
         start_lock_delay_timer();
 
+    // Locking
     if (lock_delay_timer_ == 0 && landed) {
         field_.SetPiece(GetCurrentPiece());
 
@@ -395,13 +393,23 @@ void Tetris::start_lock_delay_timer()
 
 void Tetris::reset_lock_delay_timer()
 {
-    lock_delay_timer_ = -1;
+    if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
+        lock_delay_timer_ = -1;
+        reset_counter_++;
+    }
 }
 
 void Tetris::tick_lock_delay_timer()
 {
     if (lock_delay_timer_ > 0)
         lock_delay_timer_--;
+}
+
+void Tetris::reset_all_timers()
+{
+    lock_delay_timer_ = -1;
+    clearing_timer_ = -1;
+    reset_counter_ = 0;
 }
 
 void Tetris::spawn_tetromino()
@@ -414,12 +422,10 @@ void Tetris::spawn_tetromino()
     bag_.pop_front();
 
     // Tetromino
-    tetromino_ = Tetromino(kind, Point(4, 19));
+    tetromino_ = Tetromino(kind, SPAWN_POS);
 
     // Timers and counter
-    lock_delay_timer_ = -1;
-    clearing_timer_ = -1;
-    reset_counter_ = 0;
+    reset_all_timers();
 
     // Hold
     is_hold_available_ = true;

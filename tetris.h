@@ -93,9 +93,12 @@ private:
     bool drop_piece(Tetromino &tet);
     bool move_piece(int action);
     bool has_landed();
+    void hold_piece();
+
     void start_lock_delay_timer();
     void reset_lock_delay_timer();
     void tick_lock_delay_timer();
+    void reset_all_timers();
 
     void spawn_tetromino();
     void generate_bag();

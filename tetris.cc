@@ -194,8 +194,29 @@ void Tetris::UpdateFrame(int action)
         return;
     }
 
-    // Move the piece
-    if (action &MOV_HARDDROP) {
+    // Actions
+    if (action & HOLD_PIECE) {
+        if (IsEmptyCell(hold_.kind)) {
+            hold_ = tetromino_;
+            hold_.rotation = 0;
+            hold_.pos = {};
+            spawn_tetromino();
+            return;
+        }
+        else if (IsHoldAvailable()) {
+            std::swap(tetromino_, hold_);
+            tetromino_.pos = {4, 19};
+            hold_.rotation = 0;
+            hold_.pos = {0, 0};
+            // Timers and counter
+            lock_delay_timer_ = -1;
+            clearing_timer_ = -1;
+            reset_counter_ = 0;
+            is_hold_available_ = false;
+            return;
+        }
+    }
+    else if (action & MOV_HARDDROP) {
         drop_piece(tetromino_);
         lock_delay_timer_ = 0;
     }
@@ -283,6 +304,16 @@ Piece Tetris::GetGhostPiece() const
     return piece;
 }
 
+Piece Tetris::GetHoldPiece() const
+{
+    Piece piece = GetPiece(hold_.kind, hold_.rotation);
+
+    for (auto &pos: piece.cells)
+        pos += hold_.pos;
+
+    return piece;
+}
+
 Piece Tetris::GetNextPiece(int index) const
 {
     const int rotation = 0;
@@ -296,6 +327,11 @@ Piece Tetris::GetNextPiece(int index) const
         kind = bag_[index];
 
     return GetPiece(kind, rotation);
+}
+
+bool Tetris::IsHoldAvailable() const
+{
+    return is_hold_available_;
 }
 
 int Tetris::GetLevel() const
@@ -455,6 +491,9 @@ void Tetris::spawn_tetromino()
     lock_delay_timer_ = -1;
     clearing_timer_ = -1;
     reset_counter_ = 0;
+
+    // Hold
+    is_hold_available_ = true;
 
     if (!can_fit(tetromino_))
         is_game_over_ = true;

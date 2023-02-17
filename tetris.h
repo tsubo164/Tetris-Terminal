@@ -14,6 +14,7 @@ enum TetrominoAction {
     MOV_HARDDROP  = 1 << 4,
     ROT_RIGHT     = 1 << 5,
     ROT_LEFT      = 1 << 6,
+    HOLD_PIECE    = 1 << 7,
 };
 
 class Tetris {
@@ -42,7 +43,9 @@ public:
     int GetPieceKindList(int index) const;
     Piece GetCurrentPiece() const;
     Piece GetGhostPiece() const;
+    Piece GetHoldPiece() const;
     Piece GetNextPiece(int index) const;
+    bool IsHoldAvailable() const;
 
     // Info
     int GetLevel() const;
@@ -65,6 +68,7 @@ private:
 
     Tetromino tetromino_;
     Tetromino ghost_;
+    Tetromino hold_;
     Field field_;
 
     std::deque<int> bag_;
@@ -76,6 +80,7 @@ private:
     int playing_fps_ = 60;
 
     int preview_count_ = 1;
+    bool is_hold_available_ = false;
 
     unsigned long frame_ = 0;
 

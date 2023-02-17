@@ -237,7 +237,7 @@ static void draw_field()
 static void draw_info()
 {
     {
-        int x = 17, y = 20;
+        int x = 19, y = 20;
 
         draw_str(x, y--, "SCORE");
         draw_int(x, y--, tetris.GetScore());
@@ -253,12 +253,12 @@ static void draw_info()
         y--;
         draw_str(x, y--, "Q: Quit");
         draw_str(x, y--, "R: Reset");
-        draw_str(x, y--, "H: Move L");
-        draw_str(x, y--, "L: Move R");
-        draw_str(x, y--, "J: Sof");
-        draw_str(x, y--, "M: Hard");
-        draw_str(x, y--, "D: Spin L");
-        draw_str(x, y--, "F: Spin R");
+        draw_str(x, y--, "H: Move Left");
+        draw_str(x, y--, "L: Move Right");
+        draw_str(x, y--, "J: Soft Drop");
+        draw_str(x, y--, "M: Hard Drop");
+        draw_str(x, y--, "D: Spin Left");
+        draw_str(x, y--, "F: Spin Right");
         draw_str(x, y--, "G: Hold");
         draw_str(x, y--, "ESC: Pause");
         draw_str(x, y--, "1: Preview #");
@@ -266,7 +266,7 @@ static void draw_info()
         draw_str(x, y--, "3: Toggle Hold");
     }
     {
-        int x = 12, y = 20;
+        int x = 13, y = 20;
 
         draw_str(x, y, "NEXT");
 
@@ -280,9 +280,22 @@ static void draw_info()
                 draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
             }
         }
+
+        y = 1;
+
+        draw_str(x, y, "HOLD");
+        const Piece held = tetris.GetHoldPiece();
+
+        if (!IsEmptyCell(held.kind)) {
+            is_drawing_ghost = !tetris.IsHoldAvailable();
+            for (const auto &pos: held.cells) {
+                draw_cell(x + pos.x + 1, y + pos.y - 2, held.kind);
+            }
+            is_drawing_ghost = false;
+        }
     }
     {
-        int x = 23, y = 20;
+        int x = 27, y = 20;
 
         draw_str(x, y--, "FPS");
         draw_flt(x, y--, fps);
@@ -412,13 +425,14 @@ static int input_key()
     case 'k': action = MOV_UP; break;
     case 'j': action = MOV_DOWN; break;
     case 'm': action = MOV_HARDDROP; break;
+    case 'c': action = HOLD_PIECE; break;
 
     case '1':
         preview_count = preview_count == 6 ? 1 : preview_count + 1;
         tetris.SetPreviewCount(preview_count);
         break;
 
-    case 'v':
+    case 9: // TAB
         if (tetris.IsDebugMode()) {
             const Piece piece = tetris.GetCurrentPiece();
             int kind = piece.kind;

@@ -18,6 +18,7 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 static double fps = 0.0;
 static unsigned long frame = 0;
 static bool is_drawing_ghost = false;
+static int preview_count = 1;
 
 Tetris tetris;
 Point global_offset = {1, 1};
@@ -256,12 +257,19 @@ static void draw_info()
         y--;
         draw_str(x, y--, "Q: Quit");
         draw_str(x, y--, "R: Reset");
-        draw_str(x, y--, "H: Move Left");
-        draw_str(x, y--, "L: Move Right");
-        draw_str(x, y--, "J: Sof Drop");
-        draw_str(x, y--, "M: Hard Drop");
-        draw_str(x, y--, "D: Rotate Left");
-        draw_str(x, y--, "F: Rotate Right");
+        draw_str(x, y--, "H: Move L");
+        draw_str(x, y--, "L: Move R");
+        draw_str(x, y--, "J: Sof");
+        draw_str(x, y--, "M: Hard");
+        draw_str(x, y--, "D: Spin L");
+        draw_str(x, y--, "F: Spin R");
+        draw_str(x, y--, "ESC: Pause");
+    }
+    {
+        int x = 30, y = 7;
+        draw_str(x, y--, "1: Preview #");
+        draw_str(x, y--, "2: Ghost");
+        draw_str(x, y--, "3: Hold");
     }
     {
         int x = 13, y = 19;
@@ -300,6 +308,27 @@ static void draw_debug()
     }
 }
 
+static void draw_game_over()
+{
+    if (!tetris.IsGameOver())
+        return;
+
+    draw_str(0, 10, "GAME OVER");
+}
+
+static void draw_pause()
+{
+    if (!tetris.IsPaused())
+        return;
+
+    for (int y = 0; y < FIELD_HEIGHT; y++) {
+        for (int x = 0; x < FIELD_WIDTH; x++) {
+            draw_str(x, y, " ");
+        }
+    }
+    draw_str(2, 10, "PAUSE");
+}
+
 void render()
 {
     erase();
@@ -311,8 +340,8 @@ void render()
     draw_info();
     draw_debug();
 
-    if (tetris.IsGameOver())
-        draw_str(0, 10, "GAME OVER");
+    draw_game_over();
+    draw_pause();
 
     refresh();
 }
@@ -384,13 +413,24 @@ static int input_key()
     case 'j': action = MOV_DOWN; break;
     case 'm': action = MOV_HARDDROP; break;
 
+    case '1':
+        preview_count = preview_count == 6 ? 1 : preview_count + 1;
+        tetris.SetPreviewCount(preview_count);
+        break;
+
+              /*
     case '1': case '2': case '3': case '4': case '5': case '6': case '7':
         tetris.ChangeTetrominoKind(key - '1' + 1);
         break;
+              */
 
     case 'r':
         frame = 0;
         tetris.PlayGame();
+        break;
+
+    case 27: // ESC
+        tetris.PauseGame();
         break;
 
     case 'q':

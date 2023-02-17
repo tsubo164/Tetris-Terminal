@@ -23,8 +23,11 @@ public:
 
     void PlayGame();
     void QuitGame();
+    void PauseGame();
     bool IsPlaying() const;
     bool IsGameOver() const;
+    bool IsPaused() const;
+    void SetPreviewCount(int count);
 
     // Tick Game
     void UpdateFrame(int action);
@@ -68,8 +71,11 @@ private:
 
     bool is_playing_ = false;
     bool is_game_over_ = false;
+    bool is_paused_ = false;
     bool debug_mode_ = false;
     int playing_fps_ = 60;
+
+    int preview_count_ = 1;
 
     unsigned long frame_ = 0;
 

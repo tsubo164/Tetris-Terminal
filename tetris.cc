@@ -73,6 +73,11 @@ void Tetris::QuitGame()
     is_playing_ = false;
 }
 
+void Tetris::PauseGame()
+{
+    is_paused_ = !is_paused_;
+}
+
 bool Tetris::IsPlaying() const
 {
     return is_playing_;
@@ -81,6 +86,16 @@ bool Tetris::IsPlaying() const
 bool Tetris::IsGameOver() const
 {
     return is_game_over_;
+}
+
+bool Tetris::IsPaused() const
+{
+    return is_paused_;
+}
+
+void Tetris::SetPreviewCount(int count)
+{
+    preview_count_ = std::min(std::max(1, count), 6);
 }
 
 bool Tetris::drop_piece(Tetromino &tet)
@@ -157,7 +172,7 @@ bool Tetris::has_landed()
 
 void Tetris::UpdateFrame(int action)
 {
-    if (is_game_over_)
+    if (IsGameOver() || IsPaused())
         return;
 
     // Clears lines
@@ -275,7 +290,7 @@ Piece Tetris::GetNextPiece(int index) const
 
     if (index < 0 || index >= bag_.size())
         kind = E;
-    else if (index >= 3)
+    else if (index >= preview_count_)
         kind = E;
     else
         kind = bag_[index];

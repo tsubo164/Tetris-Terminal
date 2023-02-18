@@ -17,7 +17,6 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 // Counters
 static double fps = 0.0;
 static unsigned long frame = 0;
-static bool is_drawing_ghost = false;
 
 Tetris tetris;
 Point global_offset = {1, 1};
@@ -109,7 +108,7 @@ static void draw_flt(int x, int y, float number)
     draw_str(x, y, buf);
 }
 
-static void draw_square(int x, int y, int kind)
+static const char *get_cell_symbol(int kind)
 {
     const char *s = ".";
 
@@ -119,27 +118,24 @@ static void draw_square(int x, int y, int kind)
             break;
 
         case I: case O: case S: case Z: case J: case L: case T:
-            s = "\u25A3";
+            s = "\u25A3"; // solid square
             break;
 
         case B:
-            s = "\u25A2";
+            s = "\u25A1"; // hollow square
             break;
 
         default:
-            s = " ";
+            s = "\u25A1"; // hollow square
             break;
     }
 
-    if (is_drawing_ghost)
-        s = "\u25A2";
-
-    draw_str(x, y, s);
+    return s;
 }
 
 static const int DEFAULT_COLOR_PAIR = CELL_END;
 
-static void draw_cell(int x, int y, int kind)
+static void draw_cell(int x, int y, int kind, bool is_hollow = false)
 {
     if (IsEmptyCell(kind) && !tetris.IsDebugMode())
         return;
@@ -149,9 +145,15 @@ static void draw_cell(int x, int y, int kind)
     else
         attrset(COLOR_PAIR(DEFAULT_COLOR_PAIR));
 
-    draw_square(x, y, kind);
+    const char *sym = get_cell_symbol(is_hollow ? -1 : kind);
+    draw_str(x, y, sym);
 
     attrset(0);
+}
+
+static void draw_blank(int x, int y, bool is_flashing = false)
+{
+    draw_str(x, y, " ");
 }
 
 static void draw_tetromino()
@@ -168,16 +170,15 @@ static void draw_tetromino()
 
 static void draw_ghost()
 {
+    const bool IS_HOLLOW = true;
     const Piece piece = tetris.GetGhostPiece();
 
     if (IsEmptyCell(piece.kind))
         return;
 
-    is_drawing_ghost = true;
     for (auto pos: piece.cells) {
-        draw_cell(pos.x, pos.y, piece.kind);
+        draw_cell(pos.x, pos.y, piece.kind, IS_HOLLOW);
     }
-    is_drawing_ghost = false;
 }
 
 static void draw_borders()
@@ -228,7 +229,7 @@ static void draw_field()
         const int cleared_y = cleared_lines[i];
 
         for (int x = erase; x < 10 - erase; x++) {
-            draw_str(x, cleared_y, " ");
+            draw_blank(x, cleared_y, E);
         }
     }
 }
@@ -289,11 +290,10 @@ static void draw_info()
             const Piece hold = tetris.GetHoldPiece();
 
             if (!IsEmptyCell(hold.kind) && tetris.IsHoldEnable()) {
-                is_drawing_ghost = !tetris.IsHoldAvailable();
+                const bool is_hollow = !tetris.IsHoldAvailable();
                 for (const auto &pos: hold.cells) {
-                    draw_cell(x + pos.x + 1, y + pos.y - 2, hold.kind);
+                    draw_cell(x + pos.x + 1, y + pos.y - 2, hold.kind, is_hollow);
                 }
-                is_drawing_ghost = false;
             }
         }
     }
@@ -339,7 +339,7 @@ static void draw_pause()
 
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            draw_str(x, y, " ");
+            draw_blank(x, y);
         }
     }
     draw_str(2, 10, "PAUSE");

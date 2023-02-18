@@ -153,7 +153,13 @@ static void draw_cell(int x, int y, int kind, bool is_hollow = false)
 
 static void draw_blank(int x, int y, bool is_flashing = false)
 {
+    if (is_flashing)
+        attron(A_REVERSE);
+
     draw_str(x, y, " ");
+
+    if (is_flashing)
+        attrset(0);
 }
 
 static void draw_tetromino()
@@ -206,6 +212,7 @@ static void draw_borders()
 
 static void draw_field()
 {
+    // Stack
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = tetris.GetFieldCellKind(Point(x, y));
@@ -224,12 +231,25 @@ static void draw_field()
     const int duration = 20;
     const int frame_per_cell = duration / 5;
     const int erase = clearing_timer / frame_per_cell;
+    const bool is_flashing = (CLEARED_COUNT == 4) && (clearing_timer % 2 == 0);
 
+    // Clear animation
     for (int i = 0; i < CLEARED_COUNT; i++) {
         const int cleared_y = cleared_lines[i];
 
         for (int x = erase; x < 10 - erase; x++) {
-            draw_blank(x, cleared_y, E);
+            draw_blank(x, cleared_y, is_flashing);
+        }
+    }
+
+    // Tetris background effect
+    if (is_flashing) {
+        for (int y = 0; y < FIELD_HEIGHT; y++) {
+            for (int x = 0; x < FIELD_WIDTH; x++) {
+                const int kind = tetris.GetFieldCellKind(Point(x, y));
+                if (IsEmptyCell(kind))
+                    draw_blank(x, y, is_flashing);
+            }
         }
     }
 }

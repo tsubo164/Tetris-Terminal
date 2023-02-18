@@ -23,6 +23,7 @@ public:
     Tetris();
     ~Tetris();
 
+    // Game controls
     void PlayGame();
     void QuitGame();
     void PauseGame();

@@ -72,54 +72,64 @@ void Tetris::PlayGame()
     spawn_tetromino();
 }
 
-void Tetris::QuitGame()
+void Tetris::start_lock_delay_timer()
 {
-    is_playing_ = false;
+    if (lock_delay_timer_ == -1)
+        lock_delay_timer_ = playing_fps_ / 2;
 }
 
-void Tetris::PauseGame()
+void Tetris::reset_lock_delay_timer()
 {
-    is_paused_ = !is_paused_;
+    if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
+        lock_delay_timer_ = -1;
+        reset_counter_++;
+    }
 }
 
-bool Tetris::IsPlaying() const
+void Tetris::tick_lock_delay_timer()
 {
-    return is_playing_;
+    if (lock_delay_timer_ > 0)
+        lock_delay_timer_--;
 }
 
-bool Tetris::IsGameOver() const
+void Tetris::reset_all_timers()
 {
-    return is_game_over_;
+    lock_delay_timer_ = -1;
+    clearing_timer_ = -1;
+    reset_counter_ = 0;
 }
 
-bool Tetris::IsPaused() const
+void Tetris::spawn_tetromino()
 {
-    return is_paused_;
+    // Bag
+    if (bag_.size() == 7)
+        generate_bag();
+
+    const int kind = bag_.front();
+    bag_.pop_front();
+
+    // Tetromino
+    tetromino_ = Tetromino(kind, SPAWN_POS);
+
+    // Timers and counter
+    reset_all_timers();
+
+    // Hold
+    is_hold_available_ = true;
+
+    if (!tetromino_.CanFit(field_))
+        is_game_over_ = true;
 }
 
-void Tetris::SetPreviewCount(int count)
+void Tetris::generate_bag()
 {
-    preview_count_ = std::min(std::max(1, count), 6);
-}
+    std::array<int, 7> kinds = {I, O, S, Z, J, L, T};
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::shuffle(kinds.begin(), kinds.end(), rng);
 
-void Tetris::SetGhostEnable(bool enable)
-{
-    is_ghost_enable_ = enable;
-}
-
-void Tetris::SetHoldEnable(bool enable)
-{
-    is_hold_enable_ = enable;
-}
-
-bool Tetris::IsGhostEnable() const
-{
-    return is_ghost_enable_;
-}
-
-bool Tetris::IsHoldEnable() const
-{
-    return is_hold_enable_;
+    for (auto kind: kinds)
+        bag_.push_back(kind);
 }
 
 bool Tetris::drop_piece(Tetromino &tet)
@@ -424,62 +434,52 @@ int Tetris::GetResetCounter() const
     return reset_counter_;
 }
 
-void Tetris::start_lock_delay_timer()
+void Tetris::QuitGame()
 {
-    if (lock_delay_timer_ == -1)
-        lock_delay_timer_ = playing_fps_ / 2;
+    is_playing_ = false;
 }
 
-void Tetris::reset_lock_delay_timer()
+void Tetris::PauseGame()
 {
-    if (lock_delay_timer_ > 0 && reset_counter_ < 16) {
-        lock_delay_timer_ = -1;
-        reset_counter_++;
-    }
+    is_paused_ = !is_paused_;
 }
 
-void Tetris::tick_lock_delay_timer()
+bool Tetris::IsPlaying() const
 {
-    if (lock_delay_timer_ > 0)
-        lock_delay_timer_--;
+    return is_playing_;
 }
 
-void Tetris::reset_all_timers()
+bool Tetris::IsGameOver() const
 {
-    lock_delay_timer_ = -1;
-    clearing_timer_ = -1;
-    reset_counter_ = 0;
+    return is_game_over_;
 }
 
-void Tetris::spawn_tetromino()
+bool Tetris::IsPaused() const
 {
-    // Bag
-    if (bag_.size() == 7)
-        generate_bag();
-
-    const int kind = bag_.front();
-    bag_.pop_front();
-
-    // Tetromino
-    tetromino_ = Tetromino(kind, SPAWN_POS);
-
-    // Timers and counter
-    reset_all_timers();
-
-    // Hold
-    is_hold_available_ = true;
-
-    if (!tetromino_.CanFit(field_))
-        is_game_over_ = true;
+    return is_paused_;
 }
 
-void Tetris::generate_bag()
+void Tetris::SetPreviewCount(int count)
 {
-    std::array<int, 7> kinds = {I, O, S, Z, J, L, T};
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::shuffle(kinds.begin(), kinds.end(), rng);
+    preview_count_ = std::min(std::max(1, count), 6);
+}
 
-    for (auto kind: kinds)
-        bag_.push_back(kind);
+void Tetris::SetGhostEnable(bool enable)
+{
+    is_ghost_enable_ = enable;
+}
+
+void Tetris::SetHoldEnable(bool enable)
+{
+    is_hold_enable_ = enable;
+}
+
+bool Tetris::IsGhostEnable() const
+{
+    return is_ghost_enable_;
+}
+
+bool Tetris::IsHoldEnable() const
+{
+    return is_hold_enable_;
 }

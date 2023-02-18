@@ -32,7 +32,7 @@ void Field::Clear()
     lines_.fill(Line());
 }
 
-int Field::GetFieldCellKind(Point pos) const
+int Field::GetCellKind(Point pos) const
 {
     if (is_inside_hole(pos))
         return E;

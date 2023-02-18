@@ -97,7 +97,7 @@ private:
     int clearing_timer_ = -1;
     int reset_counter_ = -1;
 
-    float drop_ = 0;
+    float gravity_drop_ = 0;
     float gravity_ = 1./60;
 
     bool drop_piece(Tetromino &tet);

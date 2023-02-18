@@ -156,7 +156,7 @@ bool Tetris::move_piece(int action)
     bool has_moved = false;
 
     // Gravity drop
-    drop_ -= gravity_;
+    gravity_drop_ -= gravity_;
 
     // Move
     if (action & MOV_LEFT)
@@ -169,17 +169,25 @@ bool Tetris::move_piece(int action)
         moved.pos.y++;
 
     if (action & MOV_DOWN)
-        drop_ -= 60./60;
+        gravity_drop_ -= 60./60;
 
-    if (drop_ < -1) {
+    /*
+    if (gravity_drop_ < -1) {
         moved.pos.y--;
-        drop_ += 1;
+        gravity_drop_ += 1;
+    }
+    */
+    while (gravity_drop_ < -1) {
+        moved.pos.y--;
+        gravity_drop_ += 1;
+        if (!moved.CanFit(field_)) {
+            moved.pos.y++;
+            break;
+        }
     }
 
     if (moved.pos != current.pos)
         has_moved = moved.CanFit(field_);
-    // TODO commit move before rotation
-    // there might be a situation it can move but not rotate
 
     // Rot
     if (action & ROT_LEFT)
@@ -189,7 +197,7 @@ bool Tetris::move_piece(int action)
         moved.rotation = (current.rotation + 1) % 4;
 
     if (moved.rotation != current.rotation)
-        has_moved = moved.KickWall(field_, current.rotation);
+        has_moved = has_moved || moved.KickWall(field_, current.rotation);
 
     // Commit move
     if (has_moved)
@@ -280,9 +288,11 @@ void Tetris::UpdateFrame(int action)
     // Ghost
     update_ghost();
 
-    bool landed = has_landed();
-    if (landed)
+    const bool landed = has_landed();
+    if (landed) {
+        gravity_drop_ = 0.;
         start_lock_delay_timer();
+    }
 
     // Locking
     if (lock_delay_timer_ == 0 && landed) {
@@ -307,7 +317,7 @@ void Tetris::UpdateFrame(int action)
 
 int Tetris::GetFieldCellKind(Point pos) const
 {
-    return field_.GetFieldCellKind(pos);
+    return field_.GetCellKind(pos);
 }
 
 int Tetris::GetClearedLineCount() const

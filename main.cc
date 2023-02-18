@@ -17,6 +17,7 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 // Counters
 static double fps = 0.0;
 static unsigned long frame = 0;
+static int game_over_counter = -1;
 
 Tetris tetris;
 Point global_offset = {1, 1};
@@ -164,6 +165,9 @@ static void draw_blank(int x, int y, bool is_flashing = false)
 
 static void draw_tetromino()
 {
+    if (tetris.IsGameOver())
+        return;
+
     const Piece piece = tetris.GetCurrentPiece();
 
     if (IsEmptyCell(piece.kind))
@@ -349,7 +353,25 @@ static void draw_game_over()
     if (!tetris.IsGameOver())
         return;
 
-    draw_str(0, 10, "GAME OVER");
+    if (game_over_counter == -1)
+        game_over_counter = 60;
+    else if (game_over_counter > 0)
+        game_over_counter--;
+
+    const int fill_y = game_over_counter / 2;
+
+    for (int y = fill_y; y < FIELD_HEIGHT; y++) {
+        for (int x = 0; x < FIELD_WIDTH; x++) {
+            draw_str(x, y, "\u25AC");
+        }
+    }
+
+    if (game_over_counter == 0) {
+        int x = 0, y = 11;
+        draw_str(x, y--, "          ");
+        draw_str(x, y--, "GAME OVER ");
+        draw_str(x, y--, "          ");
+    }
 }
 
 static void draw_pause()
@@ -476,11 +498,13 @@ static int input_key()
 
     case 'r':
         frame = 0;
+        game_over_counter = -1;
         tetris.PlayGame();
         break;
 
     case 27: // ESC
-        tetris.PauseGame();
+        if (!tetris.IsGameOver())
+            tetris.PauseGame();
         break;
 
     case 'q':

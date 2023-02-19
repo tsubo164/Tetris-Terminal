@@ -171,12 +171,6 @@ bool Tetris::move_piece(int action)
     if (action & MOV_DOWN)
         gravity_drop_ -= 60./60;
 
-    /*
-    if (gravity_drop_ < -1) {
-        moved.pos.y--;
-        gravity_drop_ += 1;
-    }
-    */
     while (gravity_drop_ < -1) {
         moved.pos.y--;
         gravity_drop_ += 1;

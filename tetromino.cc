@@ -17,12 +17,13 @@ Tetromino::~Tetromino()
 
 bool Tetromino::CanFit(const Field &field) const
 {
-    for (int i = 0; i < 4; i++) {
-        const Point local = GetPiece(kind, rotation).cells[i];
-        const Point world = pos + local;
-        const int field_cell = field.GetCellKind(world);
+    const Piece piece = GetPiece(kind, rotation);
 
-        if (field_cell)
+    for (auto cell: piece.cells) {
+        const Point world = pos + cell;
+        const int kind = field.GetCellKind(world);
+
+        if (!IsEmptyCell(kind))
             return false;
     }
 

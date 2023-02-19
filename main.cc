@@ -277,15 +277,15 @@ static void draw_info()
         y--;
         draw_str(x, y--, "Q: Quit");
         draw_str(x, y--, "R: Reset");
-        draw_str(x, y--, "H: Move Left");
-        draw_str(x, y--, "L: Move Right");
-        draw_str(x, y--, "J: Soft Drop");
-        draw_str(x, y--, "M: Hard Drop");
-        draw_str(x, y--, "D: Spin Left");
-        draw_str(x, y--, "F: Spin Right");
-        draw_str(x, y--, "G: Hold");
+        draw_str(x, y--, "\u2190: Move Left");
+        draw_str(x, y--, "\u2192: Move Right");
+        draw_str(x, y--, "\u2193: Soft Drop");
+        draw_str(x, y--, "Space: Hard Drop");
+        draw_str(x, y--, "Z: Spin Left");
+        draw_str(x, y--, "X: Spin Right");
+        draw_str(x, y--, "C: Hold");
         draw_str(x, y--, "ESC: Pause");
-        draw_str(x, y--, "1: Preview #");
+        draw_str(x, y--, "1: Preview Count");
         draw_str(x, y--, "2: Toggle Ghost");
         draw_str(x, y--, "3: Toggle Hold");
     }
@@ -442,6 +442,7 @@ static int initialize_screen()
     initscr();
     cbreak();
     noecho();
+    keypad(stdscr, TRUE);
 
     if (nodelay(stdscr, 1) == ERR) {
         return 1;
@@ -463,14 +464,29 @@ static int input_key()
     int action = 0;
 
     switch (key) {
-    case 'd': action = ROT_LEFT; break;
-    case 'f': action = ROT_RIGHT; break;
-    case 'h': action = MOV_LEFT; break;
-    case 'l': action = MOV_RIGHT; break;
-    case 'k': action = MOV_UP; break;
-    case 'j': action = MOV_DOWN; break;
-    case 'm': action = MOV_HARDDROP; break;
-    case 'c': action = HOLD_PIECE; break;
+    case 'z': case 'd':
+        action = ROT_LEFT; break;
+
+    case 'x': case 'f':
+        action = ROT_RIGHT; break;
+
+    case KEY_LEFT: case 'h':
+        action = MOV_LEFT; break;
+
+    case KEY_RIGHT: case 'l':
+        action = MOV_RIGHT; break;
+
+    case KEY_UP: case 'k':
+        action = MOV_UP; break;
+
+    case KEY_DOWN: case 'j':
+        action = MOV_DOWN; break;
+
+    case ' ': case 'm':
+        action = MOV_HARDDROP; break;
+
+    case 'c':
+        action = HOLD_PIECE; break;
 
     case '1':
         {

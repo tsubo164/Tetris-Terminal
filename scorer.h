@@ -11,6 +11,8 @@ public:
     void Commit();
 
     void AddLineClear(int count);
+    void AddSoftDrop();
+    void AddHardDrop(int distance);
 
     int GetScore() const;
     int GetLines() const;

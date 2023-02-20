@@ -256,13 +256,19 @@ void Tetris::UpdateFrame(int action)
         return;
     }
     else if (action & MOV_HARDDROP) {
+        const int old_y = tetromino_.pos.y;
         drop_piece(tetromino_);
         lock_delay_timer_ = 0;
+
+        scorer_.AddHardDrop(old_y - tetromino_.pos.y);
     }
     else {
         const bool moved = move_piece(action);
         if (moved)
             reset_lock_delay_timer();
+
+        if (moved && (action & MOV_DOWN))
+            scorer_.AddSoftDrop();
     }
 
     // Ghost

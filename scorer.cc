@@ -44,6 +44,16 @@ void Scorer::AddLineClear(int count)
     cleared_lines_ = count;
 }
 
+void Scorer::AddSoftDrop()
+{
+    score_++;
+}
+
+void Scorer::AddHardDrop(int distance)
+{
+    score_ += 2 * distance;
+}
+
 int Scorer::GetScore() const
 {
     return score_;

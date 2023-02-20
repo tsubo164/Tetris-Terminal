@@ -350,6 +350,8 @@ static void draw_debug()
     draw_int(tetris.GetResetCounter());
     draw_str(x, y--, "Gravity:         ");
     draw_flt(tetris.GetGravity());
+    draw_str(x, y--, "Combo Counter:   ");
+    draw_int(tetris.GetComboCounter());
 
     draw_str(x, y, "Next Piece Kinds: ");
     for (int i = 0; i < 14; i++) {

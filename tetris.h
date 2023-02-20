@@ -61,6 +61,7 @@ public:
     int GetLevel() const;
     int GetScore() const;
     int GetTotalLineCount() const;
+    int GetComboCounter() const;
 
     // Debug
     void SetDebugMode();

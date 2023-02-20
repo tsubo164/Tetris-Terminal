@@ -396,6 +396,11 @@ int Tetris::GetTotalLineCount() const
     return scorer_.GetLines();
 }
 
+int Tetris::GetComboCounter() const
+{
+    return scorer_.GetComboCounter();
+}
+
 int Tetris::GetClearingTimer() const
 {
     return clearing_timer_;

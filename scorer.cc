@@ -1,4 +1,5 @@
 #include "scorer.h"
+#include <algorithm>
 #include <cassert>
 
 Scorer::Scorer()
@@ -17,10 +18,15 @@ void Scorer::Reset()
 
     // For each locking
     cleared_lines_ = 0;
+    combo_counter_ = -1;
 }
 
 void Scorer::Start()
 {
+    if (cleared_lines_ == 0)
+        // Combo break
+        combo_counter_ = -1;
+
     cleared_lines_ = 0;
 }
 
@@ -32,10 +38,24 @@ void Scorer::Commit()
 
     // Total lines
     lines_ += cleared_lines_;
+    combo_counter_ = std::min(13, combo_counter_ + 1);
+    score_ += 50 * get_combo_count() * level_;
 
     // Level
     if (lines_ >= 5 * level_)
         level_++;
+}
+
+int Scorer::get_combo_count() const
+{
+    const int count = combo_counter_;
+    static const int combo_counts[14] = {
+     // 0  1  2  3  4  5  6  7  8  9 10 11 12 13+
+        0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5
+    };
+
+    assert(count >= 0 && count < 14);
+    return combo_counts[count];
 }
 
 void Scorer::AddLineClear(int count)
@@ -67,4 +87,9 @@ int Scorer::GetLines() const
 int Scorer::GetLevel() const
 {
     return level_;
+}
+
+int Scorer::GetComboCounter() const
+{
+    return combo_counter_;
 }

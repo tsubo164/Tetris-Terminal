@@ -21,17 +21,6 @@ static float get_gravity(int level)
         return gravity_table[level];
 }
 
-static int get_score(int action)
-{
-    switch (action) {
-    case 1: return 100;
-    case 2: return 300;
-    case 3: return 500;
-    case 4: return 800;
-    default: return 0;
-    };
-}
-
 static const Point SPAWN_POS = {4, 19};
 
 Tetris::Tetris()
@@ -60,11 +49,10 @@ void Tetris::PlayGame()
     is_playing_ = true;
     is_game_over_ = false;
     frame_ = 1;
-
     gravity_ = get_gravity(1);
-    total_line_count_ = 0;
-    level_ = 1;
-    score_ = 0;
+
+    // Score
+    scorer_.Reset();
 
     // Start
     ghost_ = Tetromino();
@@ -116,6 +104,9 @@ void Tetris::spawn_tetromino()
 
     // Hold
     is_hold_available_ = true;
+
+    // Score
+    scorer_.Start();
 
     if (!tetromino_.CanFit(field_))
         is_game_over_ = true;
@@ -251,13 +242,8 @@ void Tetris::UpdateFrame(int action)
         return;
     }
     else if (clearing_timer_ == 0) {
-        // lines, level, gravity
-        const int count = field_.GetClearedLineCount();
-        total_line_count_ += count;
-        if (total_line_count_ >= 5 * level_)
-            level_++;
-        gravity_ = get_gravity(level_);
-        score_ += get_score(count);
+        scorer_.Commit();
+        gravity_ = get_gravity(GetLevel());
 
         field_.ClearLines();
         spawn_tetromino();
@@ -292,7 +278,9 @@ void Tetris::UpdateFrame(int action)
     if (lock_delay_timer_ == 0 && landed) {
         field_.SetPiece(GetCurrentPiece());
 
-        if (GetClearedLineCount() > 0) {
+        const int cleared_lines = GetClearedLineCount();
+        if (cleared_lines > 0) {
+            scorer_.AddLineClear(cleared_lines);
             // start clear lines
             tetromino_.kind = E;
             clearing_timer_ = 20;
@@ -389,17 +377,17 @@ bool Tetris::IsHoldAvailable() const
 
 int Tetris::GetLevel() const
 {
-    return level_;
+    return scorer_.GetLevel();
 }
 
 int Tetris::GetScore() const
 {
-    return score_;
+    return scorer_.GetScore();
 }
 
 int Tetris::GetTotalLineCount() const
 {
-    return total_line_count_;
+    return scorer_.GetLines();
 }
 
 int Tetris::GetClearingTimer() const
@@ -436,6 +424,11 @@ int Tetris::GetLockDelayTimer() const
 int Tetris::GetResetCounter() const
 {
     return reset_counter_;
+}
+
+float Tetris::GetGravity() const
+{
+    return gravity_;
 }
 
 void Tetris::QuitGame()

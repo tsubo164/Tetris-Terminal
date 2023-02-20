@@ -109,6 +109,14 @@ static void draw_flt(int x, int y, float number)
     draw_str(x, y, buf);
 }
 
+static void draw_flt(float number)
+{
+    static char buf[64] = {'\0'};
+
+    sprintf(buf, "%g", number);
+    addstr(buf);
+}
+
 static const char *get_cell_symbol(int kind)
 {
     const char *s = ".";
@@ -340,6 +348,8 @@ static void draw_debug()
     draw_int(tetris.GetLockDelayTimer());
     draw_str(x, y--, "Reset Counter:   ");
     draw_int(tetris.GetResetCounter());
+    draw_str(x, y--, "Gravity:         ");
+    draw_flt(tetris.GetGravity());
 
     draw_str(x, y, "Next Piece Kinds: ");
     for (int i = 0; i < 14; i++) {

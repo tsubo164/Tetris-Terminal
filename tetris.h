@@ -2,6 +2,7 @@
 #define TETRIS_H
 
 #include "tetromino.h"
+#include "scorer.h"
 #include "point.h"
 #include "piece.h"
 #include "field.h"
@@ -67,6 +68,7 @@ public:
     void ChangeTetrominoKind(int kind);
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
+    float GetGravity() const;
 
 private:
     Tetromino tetromino_;
@@ -74,6 +76,7 @@ private:
     Tetromino hold_;
     Field field_;
 
+    Scorer scorer_;
     std::deque<int> bag_;
 
     bool is_playing_ = false;
@@ -88,10 +91,6 @@ private:
     bool is_ghost_enable_ = true;
 
     unsigned long frame_ = 0;
-
-    int level_ = 1;
-    int total_line_count_ = 0;
-    int score_ = 0;
 
     int lock_delay_timer_ = -1;
     int clearing_timer_ = -1;

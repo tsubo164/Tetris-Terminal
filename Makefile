@@ -4,7 +4,7 @@ CFLAGS  := $(OPT) -Wall --pedantic-errors --std=c++14 -c
 LDFLAGS := -lncurses
 RM      := rm -f
 
-SRCS    := field main piece tetris tetromino
+SRCS    := field main piece scorer tetris tetromino
 
 .PHONY: clean
 

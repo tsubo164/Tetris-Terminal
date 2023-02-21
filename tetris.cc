@@ -147,7 +147,8 @@ bool Tetris::move_piece(int action)
     bool has_moved = false;
 
     // Gravity drop
-    gravity_drop_ -= gravity_;
+    if (!IsDebugMode())
+        gravity_drop_ -= gravity_;
 
     // Move
     if (action & MOV_LEFT)
@@ -270,6 +271,8 @@ void Tetris::UpdateFrame(int action)
         if (moved && (action & MOV_DOWN))
             scorer_.AddSoftDrop();
     }
+    if (action)
+        last_action_ = action;
 
     // Ghost
     update_ghost();
@@ -285,6 +288,11 @@ void Tetris::UpdateFrame(int action)
         field_.SetPiece(GetCurrentPiece());
 
         const int cleared_lines = GetClearedLineCount();
+
+        // T-Spin
+        if (tetromino_.kind == T && (last_action_ & (ROT_LEFT | ROT_RIGHT)))
+            scorer_.AddTspin(tetromino_.pos, tetromino_.rotation, field_);
+
         if (cleared_lines > 0) {
             scorer_.AddLineClear(cleared_lines);
             // start clear lines
@@ -399,6 +407,11 @@ int Tetris::GetTotalLineCount() const
 int Tetris::GetComboCounter() const
 {
     return scorer_.GetComboCounter();
+}
+
+int Tetris::GetTspinKind() const
+{
+    return scorer_.GetTspinKind();
 }
 
 int Tetris::GetClearingTimer() const

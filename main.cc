@@ -13,6 +13,9 @@ static int input_key();
 static void render();
 
 static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
+static const int DEFAULT_FG_COLOR = 10;
+static const int DEFAULT_BG_COLOR = 11;
+static const int DEFAULT_COLOR_PAIR = 10;
 
 // Counters
 static double fps = 0.0;
@@ -20,7 +23,7 @@ static unsigned long frame = 0;
 static int game_over_counter = -1;
 
 Tetris tetris;
-Point global_offset = {1, 1};
+Point global_offset = {1 + 7, 1};
 
 int main(int argc, char **argv)
 {
@@ -142,8 +145,6 @@ static const char *get_cell_symbol(int kind)
     return s;
 }
 
-static const int DEFAULT_COLOR_PAIR = CELL_END;
-
 static void draw_cell(int x, int y, int kind, bool is_hollow = false)
 {
     if (IsEmptyCell(kind) && !tetris.IsDebugMode())
@@ -232,6 +233,12 @@ static void draw_field()
         }
     }
 
+    {
+        int x = -7, y = 10;
+        draw_str(x, y--, "TSPIN");
+        draw_int(x, y--, tetris.GetTspinKind());
+    }
+
     const int clearing_timer = tetris.GetClearingTimer();
     if (clearing_timer == -1)
         return;
@@ -314,8 +321,9 @@ static void draw_info()
                 }
             }
         }
-
-        y = 1;
+    }
+    {
+        int x = -6, y = 20;
 
         draw_str(x, y, "HOLD");
         if (!tetris.IsPaused()) {
@@ -415,9 +423,6 @@ void render()
 
     refresh();
 }
-
-static const int DEFAULT_FG_COLOR = 10;
-static const int DEFAULT_BG_COLOR = 11;
 
 static void assign_color(int pair_id, int r, int g, int b)
 {

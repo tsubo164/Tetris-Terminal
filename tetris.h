@@ -62,6 +62,7 @@ public:
     int GetScore() const;
     int GetTotalLineCount() const;
     int GetComboCounter() const;
+    int GetTspinKind() const;
 
     // Debug
     void SetDebugMode();
@@ -99,6 +100,7 @@ private:
 
     float gravity_drop_ = 0;
     float gravity_ = 1./60;
+    int last_action_ = 0;
 
     bool drop_piece(Tetromino &tet);
     bool move_piece(int action);

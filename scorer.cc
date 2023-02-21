@@ -19,6 +19,7 @@ void Scorer::Reset()
     // For each locking
     cleared_lines_ = 0;
     combo_counter_ = -1;
+    tspin_kind_ = 0;
 }
 
 void Scorer::Start()
@@ -74,6 +75,32 @@ void Scorer::AddHardDrop(int distance)
     score_ += 2 * distance;
 }
 
+void Scorer::AddTspin(Point pos, int rotation, const Field &field)
+{
+    const Piece tcorners = GetTcorners(rotation);
+    int front_occluded = 0;
+    int back_occluded = 0;
+
+    for (int i = 0; i < 4; i++) {
+        const Point world = pos + tcorners.cells[i];
+        const int kind = field.GetCellKind(world);
+
+        if (!IsEmptyCell(kind)) {
+            if (i == 0 || i == 1)
+                front_occluded++;
+            if (i == 2 || i == 3)
+                back_occluded++;
+        }
+    }
+
+    if (front_occluded == 2 && back_occluded == 1)
+        tspin_kind_ = TSPIN_NORMAL;
+    else if (front_occluded == 1 && back_occluded == 2)
+        tspin_kind_ = TSPIN_MINI;
+    else
+        tspin_kind_ = TSPIN_NONE;
+}
+
 int Scorer::GetScore() const
 {
     return score_;
@@ -92,4 +119,9 @@ int Scorer::GetLevel() const
 int Scorer::GetComboCounter() const
 {
     return combo_counter_;
+}
+
+int Scorer::GetTspinKind() const
+{
+    return tspin_kind_;
 }

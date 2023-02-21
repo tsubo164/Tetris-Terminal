@@ -8,7 +8,7 @@ enum CellKind {
     B = -1, // border
     E = 0, // empty
     I, O, S, Z, J, L, T,
-    CELL_END,
+    T_CORNERS,
 };
 
 struct Piece {
@@ -24,5 +24,6 @@ bool IsValidCell(int kind);
 // Piece
 void InitializePieces();
 Piece GetPiece(int kind, int rotation);
+Piece GetTcorners(int rotation);
 
 #endif

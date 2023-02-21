@@ -1,6 +1,6 @@
 #include "piece.h"
 
-static char piece_data[8][4][4] =
+static char piece_data[9][4][4] =
 {
     { // E
         {0, 0, 0, 0},
@@ -50,9 +50,15 @@ static char piece_data[8][4][4] =
         {0, 0, 0, 0},
         {0, 0, 0, 0},
     },
+    { // T corners
+        {T, 0, T, 0},
+        {0, 0, 0, 0},
+        {T, 0, T, 0},
+        {0, 0, 0, 0},
+    },
 };
 
-static Piece piece_states[8][4] = {};
+static Piece piece_states[9][4] = {};
 
 static Point rotate(Point point, int rotation)
 {
@@ -96,10 +102,14 @@ static void init_piece(int kind, int rotation)
 void InitializePieces()
 {
     // loop over all tetrominoes
-    for (int kind = E; kind < CELL_END; kind++)
+    for (int kind = E; kind < T_CORNERS; kind++)
         // loop over 4 rotations
         for (int rot = 0; rot < 4; rot++)
             init_piece(kind, rot);
+
+    // T corners
+    for (int rot = 0; rot < 4; rot++)
+        init_piece(T_CORNERS, rot);
 }
 
 Piece GetPiece(int kind, int rotation)
@@ -110,6 +120,13 @@ Piece GetPiece(int kind, int rotation)
     return piece_states[kind][rotation];
 }
 
+Piece GetTcorners(int rotation)
+{
+    assert(rotation >= 0 && rotation < 4);
+
+    return piece_states[T_CORNERS][rotation];
+}
+
 bool IsEmptyCell(int kind)
 {
     return kind == E;
@@ -117,7 +134,7 @@ bool IsEmptyCell(int kind)
 
 bool IsSolidCell(int kind)
 {
-    return kind > E && kind < CELL_END;
+    return kind > E && kind < T_CORNERS;
 }
 
 bool IsValidCell(int kind)

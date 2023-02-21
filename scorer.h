@@ -29,6 +29,7 @@ public:
     int GetLevel() const;
     int GetComboCounter() const;
     int GetTspinKind() const;
+    int GetTspinPoints() const;
 
 private:
     int score_ = 0;
@@ -39,6 +40,7 @@ private:
     int cleared_lines_ = 0;
     int combo_counter_ = -1;
     int tspin_kind_ = 0;
+    int tspin_points_ = 0;
 
     int get_combo_count() const;
 };

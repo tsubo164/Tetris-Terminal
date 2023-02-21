@@ -233,10 +233,21 @@ static void draw_field()
         }
     }
 
-    {
+    const int tspin = tetris.GetTspinKind();
+    if (tspin) {
+        const int CLEARED_COUNT = tetris.GetClearedLineCount();
         int x = -7, y = 10;
-        draw_str(x, y--, "TSPIN");
-        draw_int(x, y--, tetris.GetTspinKind());
+
+        if (tspin == TSPIN_NORMAL) {
+            draw_str(x, y--, "TSPIN");
+            draw_int(x, y--, CLEARED_COUNT);
+        }
+        else if (tspin == TSPIN_MINI) {
+            draw_str(x, y--, "MINI");
+            draw_str(x, y--, "TSPIN");
+            draw_int(x, y--, CLEARED_COUNT);
+            draw_int(x, y--, tetris.GetTspinPoints());
+        }
     }
 
     const int clearing_timer = tetris.GetClearingTimer();

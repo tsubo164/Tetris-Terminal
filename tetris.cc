@@ -414,6 +414,11 @@ int Tetris::GetTspinKind() const
     return scorer_.GetTspinKind();
 }
 
+int Tetris::GetTspinPoints() const
+{
+    return scorer_.GetTspinPoints();
+}
+
 int Tetris::GetClearingTimer() const
 {
     return clearing_timer_;

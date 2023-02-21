@@ -20,6 +20,7 @@ void Scorer::Reset()
     cleared_lines_ = 0;
     combo_counter_ = -1;
     tspin_kind_ = 0;
+    tspin_points_ = 0;
 }
 
 void Scorer::Start()
@@ -77,6 +78,12 @@ void Scorer::AddHardDrop(int distance)
 
 void Scorer::AddTspin(Point pos, int rotation, const Field &field)
 {
+    // Tetris will never make t-spin
+    const int cleared_lines = field.GetClearedLineCount();
+    if (cleared_lines == 4)
+        return;
+
+    // Detection
     const Piece tcorners = GetTcorners(rotation);
     int front_occluded = 0;
     int back_occluded = 0;
@@ -93,12 +100,29 @@ void Scorer::AddTspin(Point pos, int rotation, const Field &field)
         }
     }
 
+    // Kind
     if (front_occluded == 2 && back_occluded == 1)
         tspin_kind_ = TSPIN_NORMAL;
     else if (front_occluded == 1 && back_occluded == 2)
         tspin_kind_ = TSPIN_MINI;
     else
         tspin_kind_ = TSPIN_NONE;
+
+    // Points
+    static const int tspin_points[][4] = {
+    /* lines         0     1      2     3 */
+    /* T-spin */ { 400,  800,  1200, 1600},
+    /* Mini   */ { 100,  200,   400,    0}
+    };
+
+    if (tspin_kind_ == TSPIN_NORMAL) {
+        tspin_points_ = tspin_points[0][cleared_lines];
+    }
+    else if (tspin_kind_ == TSPIN_MINI) {
+        tspin_points_ = tspin_points[1][cleared_lines];
+    }
+
+    score_ += tspin_points_;
 }
 
 int Scorer::GetScore() const
@@ -124,4 +148,9 @@ int Scorer::GetComboCounter() const
 int Scorer::GetTspinKind() const
 {
     return tspin_kind_;
+}
+
+int Scorer::GetTspinPoints() const
+{
+    return tspin_points_;
 }

@@ -63,6 +63,7 @@ public:
     int GetTotalLineCount() const;
     int GetComboCounter() const;
     int GetTspinKind() const;
+    int GetTspinPoints() const;
 
     // Debug
     void SetDebugMode();

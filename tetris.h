@@ -98,6 +98,7 @@ private:
     int lock_delay_timer_ = -1;
     int clearing_timer_ = -1;
     int reset_counter_ = -1;
+    bool need_spawn_ = false;
 
     float gravity_drop_ = 0;
     float gravity_ = 1./60;

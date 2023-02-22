@@ -57,7 +57,8 @@ void Tetris::PlayGame()
     // Start
     ghost_ = Tetromino();
     hold_ = Tetromino();
-    spawn_tetromino();
+
+    need_spawn_ = true;
 }
 
 void Tetris::start_lock_delay_timer()
@@ -83,7 +84,6 @@ void Tetris::tick_lock_delay_timer()
 void Tetris::reset_all_timers()
 {
     lock_delay_timer_ = -1;
-    clearing_timer_ = -1;
     reset_counter_ = 0;
 }
 
@@ -110,6 +110,8 @@ void Tetris::spawn_tetromino()
 
     if (!tetromino_.CanFit(field_))
         is_game_over_ = true;
+
+    need_spawn_ = false;
 }
 
 void Tetris::generate_bag()
@@ -207,7 +209,7 @@ void Tetris::hold_piece()
 
     if (IsEmptyCell(hold_.kind)) {
         hold_ = Tetromino(tetromino_.kind, Point());
-        spawn_tetromino();
+        need_spawn_ = true;
     }
     else if (IsHoldAvailable()) {
         std::swap(tetromino_.kind, hold_.kind);
@@ -247,9 +249,14 @@ void Tetris::UpdateFrame(int action)
         gravity_ = get_gravity(GetLevel());
 
         field_.ClearLines();
-        spawn_tetromino();
+        need_spawn_ = true;
+        clearing_timer_ = -1;
         return;
     }
+
+    // Spawn
+    if (need_spawn_)
+        spawn_tetromino();
 
     // Actions
     if (action & HOLD_PIECE) {
@@ -274,14 +281,14 @@ void Tetris::UpdateFrame(int action)
     if (action)
         last_action_ = action;
 
-    // Ghost
-    update_ghost();
-
     const bool landed = has_landed();
     if (landed) {
         gravity_drop_ = 0.;
         start_lock_delay_timer();
     }
+
+    // Ghost
+    update_ghost();
 
     // Locking
     if (lock_delay_timer_ == 0 && landed) {
@@ -301,7 +308,7 @@ void Tetris::UpdateFrame(int action)
         }
         else {
             // spawn
-            spawn_tetromino();
+            need_spawn_ = true;
         }
     }
     else {

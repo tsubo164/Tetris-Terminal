@@ -369,6 +369,16 @@ static void draw_message()
         }
     }
 
+    /*
+    const int combo_count = tetris.GetComboCounter();
+
+    if (combo_count > 0 && clearing_timer == 0) {
+        message_queue_.push_back({std::to_string(combo_count), frame});
+        message_queue_.push_back({"COMBO", frame});
+        message_queue_.push_back({std::to_string(tetris.GetComboPoints()), frame});
+    }
+    */
+
     while (!message_queue_.empty()) {
         if (frame - message_queue_.front().start > 60)
             message_queue_.pop_front();

@@ -62,6 +62,7 @@ public:
     int GetScore() const;
     int GetTotalLineCount() const;
     int GetComboCounter() const;
+    int GetComboPoints() const;
     int GetTspinKind() const;
     int GetTspinPoints() const;
 

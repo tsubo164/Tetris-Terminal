@@ -28,6 +28,7 @@ public:
     int GetLines() const;
     int GetLevel() const;
     int GetComboCounter() const;
+    int GetComboPoints() const;
     int GetTspinKind() const;
     int GetTspinPoints() const;
 
@@ -39,6 +40,7 @@ private:
     // For each locking
     int cleared_lines_ = 0;
     int combo_counter_ = -1;
+    int combo_points_ = 0;
     int tspin_kind_ = 0;
     int tspin_points_ = 0;
 

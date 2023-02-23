@@ -19,6 +19,7 @@ void Scorer::Reset()
     // For each locking
     cleared_lines_ = 0;
     combo_counter_ = -1;
+    combo_points_ = 0;
     tspin_kind_ = 0;
     tspin_points_ = 0;
 }
@@ -30,6 +31,7 @@ void Scorer::Start()
         combo_counter_ = -1;
 
     cleared_lines_ = 0;
+    combo_points_ = 0;
     tspin_kind_ = 0;
     tspin_points_ = 0;
 }
@@ -43,7 +45,8 @@ void Scorer::Commit()
     // Total lines
     lines_ += cleared_lines_;
     combo_counter_ = std::min(13, combo_counter_ + 1);
-    score_ += 50 * get_combo_count() * level_;
+    combo_points_ = 50 * get_combo_count() * level_;
+    score_ += combo_points_;
 
     // Level
     if (lines_ >= 5 * level_)
@@ -145,6 +148,11 @@ int Scorer::GetLevel() const
 int Scorer::GetComboCounter() const
 {
     return combo_counter_;
+}
+
+int Scorer::GetComboPoints() const
+{
+    return combo_points_;
 }
 
 int Scorer::GetTspinKind() const

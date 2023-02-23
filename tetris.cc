@@ -416,6 +416,11 @@ int Tetris::GetComboCounter() const
     return scorer_.GetComboCounter();
 }
 
+int Tetris::GetComboPoints() const
+{
+    return scorer_.GetComboPoints();
+}
+
 int Tetris::GetTspinKind() const
 {
     return scorer_.GetTspinKind();

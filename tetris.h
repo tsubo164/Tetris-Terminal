@@ -46,7 +46,6 @@ public:
     int GetFieldCellKind(Point pos) const;
     int GetClearedLineCount() const;
     void GetClearedLines(int *cleared_line_y) const;
-    int GetClearingTimer() const;
 
     // Piece
     int GetPieceKindList(int index) const;
@@ -97,7 +96,6 @@ private:
     unsigned long frame_ = 0;
 
     int lock_delay_timer_ = -1;
-    int clearing_timer_ = -1;
     int reset_counter_ = -1;
     bool need_spawn_ = false;
 
@@ -116,7 +114,7 @@ private:
     void tick_lock_delay_timer();
     void reset_all_timers();
 
-    void spawn_tetromino();
+    bool spawn_tetromino();
     void generate_bag();
 };
 

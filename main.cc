@@ -34,6 +34,7 @@ static const int DEFAULT_COLOR_PAIR = 10;
 static double fps = 0.0;
 static unsigned long frame = 0;
 static int game_over_counter = -1;
+static int clearing_timer = -1;
 
 Tetris tetris;
 Point global_offset = {1 + 7, 1};
@@ -66,7 +67,8 @@ int main(int argc, char **argv)
         const int action = input_key();
 
         // Game logic
-        tetris.UpdateFrame(action);
+        if (clearing_timer == -1)
+            tetris.UpdateFrame(action);
 
         // Rednering
         render();
@@ -245,22 +247,29 @@ static void draw_field()
             draw_cell(x, y, kind);
         }
     }
+}
 
-    const int clearing_timer = tetris.GetClearingTimer();
-    if (clearing_timer == -1)
+static void draw_effect()
+{
+    const int duration = 20;
+    const int clear_count = tetris.GetClearedLineCount();
+
+    if (clear_count > 0 && clearing_timer == -1)
+        clearing_timer = duration;
+    else if (clearing_timer >= 0)
+        clearing_timer--;
+    else
         return;
 
-    const int CLEARED_COUNT = tetris.GetClearedLineCount();
     int cleared_lines[4] = {0};
     tetris.GetClearedLines(cleared_lines);
 
-    const int duration = 20;
     const int frame_per_cell = duration / 5;
     const int erase = clearing_timer / frame_per_cell;
-    const bool is_flashing = (CLEARED_COUNT == 4) && (clearing_timer % 2 == 0);
+    const bool is_flashing = (clear_count == 4) && (clearing_timer % 2 == 0);
 
     // Clear animation
-    for (int i = 0; i < CLEARED_COUNT; i++) {
+    for (int i = 0; i < clear_count; i++) {
         const int cleared_y = cleared_lines[i];
 
         for (int x = erase; x < 10 - erase; x++) {
@@ -354,7 +363,6 @@ static void draw_info()
 
 static void draw_message()
 {
-    const int clearing_timer = tetris.GetClearingTimer();
     const int tspin = tetris.GetTspinKind();
 
     if (tspin && clearing_timer == -1) {
@@ -460,8 +468,11 @@ void render()
 
     draw_borders();
     draw_field();
+    draw_effect();
+
     draw_ghost();
     draw_tetromino();
+
     draw_info();
     draw_message();
     draw_debug();
@@ -580,6 +591,7 @@ static int input_key()
     case 'r':
         frame = 0;
         game_over_counter = -1;
+        clearing_timer = -1;
         tetris.PlayGame();
         break;
 

@@ -87,7 +87,7 @@ void Tetris::reset_all_timers()
     reset_counter_ = 0;
 }
 
-void Tetris::spawn_tetromino()
+bool Tetris::spawn_tetromino()
 {
     // Bag
     if (bag_.size() == 7)
@@ -99,19 +99,8 @@ void Tetris::spawn_tetromino()
     // Tetromino
     tetromino_ = Tetromino(kind, SPAWN_POS);
 
-    // Timers and counter
-    reset_all_timers();
-
-    // Hold
-    is_hold_available_ = true;
-
-    // Score
-    scorer_.Start();
-
-    if (!tetromino_.CanFit(field_))
-        is_game_over_ = true;
-
     need_spawn_ = false;
+    return tetromino_.CanFit(field_);
 }
 
 void Tetris::generate_bag()
@@ -240,23 +229,27 @@ void Tetris::UpdateFrame(int action)
         return;
 
     // Clears lines
-    if (clearing_timer_ > 0) {
-        clearing_timer_--;
-        return;
-    }
-    else if (clearing_timer_ == 0) {
+    if (GetClearedLineCount() > 0) {
         scorer_.Commit();
         gravity_ = get_gravity(GetLevel());
 
         field_.ClearLines();
         need_spawn_ = true;
-        clearing_timer_ = -1;
         return;
     }
 
     // Spawn
-    if (need_spawn_)
-        spawn_tetromino();
+    if (need_spawn_) {
+        if (spawn_tetromino()) {
+            scorer_.Start();
+            reset_all_timers();
+            is_hold_available_ = true;
+        }
+        else {
+            is_game_over_ = true;
+            return;
+        }
+    }
 
     // Actions
     if (action & HOLD_PIECE) {
@@ -301,10 +294,9 @@ void Tetris::UpdateFrame(int action)
             scorer_.AddTspin(tetromino_.pos, tetromino_.rotation, field_);
 
         if (cleared_lines > 0) {
-            scorer_.AddLineClear(cleared_lines);
             // start clear lines
+            scorer_.AddLineClear(cleared_lines);
             tetromino_.kind = E;
-            clearing_timer_ = 20;
         }
         else {
             // spawn
@@ -429,11 +421,6 @@ int Tetris::GetTspinKind() const
 int Tetris::GetTspinPoints() const
 {
     return scorer_.GetTspinPoints();
-}
-
-int Tetris::GetClearingTimer() const
-{
-    return clearing_timer_;
 }
 
 void Tetris::SetDebugMode()

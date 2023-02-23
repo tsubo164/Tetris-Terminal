@@ -30,6 +30,8 @@ void Scorer::Start()
         combo_counter_ = -1;
 
     cleared_lines_ = 0;
+    tspin_kind_ = 0;
+    tspin_points_ = 0;
 }
 
 void Scorer::Commit()

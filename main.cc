@@ -2,10 +2,23 @@
 
 #include <locale.h>
 #include <ncurses.h>
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
+#include <deque>
+
+struct Message {
+    Message(const std::string &message, unsigned long start_frame)
+        : str(message), start(start_frame)
+    {
+    }
+
+    std::string str = "";
+    unsigned long start = 0;
+};
+std::deque<Message> message_queue_;
 
 static int initialize_screen();
 static void finalize_screen();
@@ -233,23 +246,6 @@ static void draw_field()
         }
     }
 
-    const int tspin = tetris.GetTspinKind();
-    if (tspin) {
-        const int CLEARED_COUNT = tetris.GetClearedLineCount();
-        int x = -7, y = 10;
-
-        if (tspin == TSPIN_NORMAL) {
-            draw_str(x, y--, "TSPIN");
-            draw_int(x, y--, CLEARED_COUNT);
-        }
-        else if (tspin == TSPIN_MINI) {
-            draw_str(x, y--, "MINI");
-            draw_str(x, y--, "TSPIN");
-            draw_int(x, y--, CLEARED_COUNT);
-            draw_int(x, y--, tetris.GetTspinPoints());
-        }
-    }
-
     const int clearing_timer = tetris.GetClearingTimer();
     if (clearing_timer == -1)
         return;
@@ -356,6 +352,36 @@ static void draw_info()
     }
 }
 
+static void draw_message()
+{
+    const int clearing_timer = tetris.GetClearingTimer();
+    const int tspin = tetris.GetTspinKind();
+
+    if (tspin && clearing_timer == -1) {
+        if (tspin == TSPIN_NORMAL) {
+            message_queue_.push_back({"TSPIN", frame});
+            message_queue_.push_back({std::to_string(tetris.GetTspinPoints()), frame});
+        }
+        else if (tspin == TSPIN_MINI) {
+            message_queue_.push_back({"MINI", frame});
+            message_queue_.push_back({"TSPIN", frame});
+            message_queue_.push_back({std::to_string(tetris.GetTspinPoints()), frame});
+        }
+    }
+
+    while (!message_queue_.empty()) {
+        if (frame - message_queue_.front().start > 60)
+            message_queue_.pop_front();
+        else
+            break;
+    }
+
+    int x = -7, y = 10;
+    for (const auto &msg: message_queue_) {
+        draw_str(x, y--, msg.str.c_str());
+    }
+}
+
 static void draw_debug()
 {
     if (!tetris.IsDebugMode())
@@ -427,6 +453,7 @@ void render()
     draw_ghost();
     draw_tetromino();
     draw_info();
+    draw_message();
     draw_debug();
 
     draw_game_over();

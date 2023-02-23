@@ -235,7 +235,6 @@ void Tetris::UpdateFrame(int action)
 
         field_.ClearLines();
         need_spawn_ = true;
-        return;
     }
 
     // Spawn

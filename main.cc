@@ -29,6 +29,7 @@ static const int SCREEN_HEIGHT = FIELD_HEIGHT + 2;
 static const int DEFAULT_FG_COLOR = 10;
 static const int DEFAULT_BG_COLOR = 11;
 static const int DEFAULT_COLOR_PAIR = 10;
+static const int CLEARING_DURATION = 20;
 
 // Counters
 static double fps = 0.0;
@@ -251,7 +252,7 @@ static void draw_field()
 
 static void draw_effect()
 {
-    const int duration = 20;
+    const int duration = CLEARING_DURATION;
     const int clear_count = tetris.GetClearedLineCount();
 
     if (clear_count > 0 && clearing_timer == -1)
@@ -363,9 +364,14 @@ static void draw_info()
 
 static void draw_message()
 {
+    const int count = tetris.GetClearedLineCount();
     const int tspin = tetris.GetTspinKind();
 
-    if (tspin && clearing_timer == -1) {
+    const bool send =
+        (tspin && count == 0 && clearing_timer == -1) ||
+        (tspin && count > 0  && clearing_timer == CLEARING_DURATION);
+
+    if (send) {
         if (tspin == TSPIN_NORMAL) {
             message_queue_.push_back({"TSPIN", frame});
             message_queue_.push_back({std::to_string(tetris.GetTspinPoints()), frame});

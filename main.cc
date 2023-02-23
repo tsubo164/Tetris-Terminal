@@ -383,6 +383,32 @@ static void draw_message()
         }
     }
 
+    if (clearing_timer == 0) {
+        switch (count) {
+        case 1:
+            message_queue_.push_back({"SNGL1", frame});
+            break;
+
+        case 2:
+            message_queue_.push_back({"DBL2", frame});
+            break;
+
+        case 3:
+            message_queue_.push_back({"TRPL3", frame});
+            break;
+
+        case 4:
+            message_queue_.push_back({"TTRS4", frame});
+            break;
+
+        default:
+            break;
+        }
+
+        if (count)
+            message_queue_.push_back({std::to_string(tetris.GetClearPoints()), frame});
+    }
+
     /*
     const int combo_count = tetris.GetComboCounter();
 

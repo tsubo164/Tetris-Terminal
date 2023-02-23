@@ -17,7 +17,7 @@ void Scorer::Reset()
     level_ = 1;
 
     // For each locking
-    cleared_lines_ = 0;
+    clear_count_ = 0;
     combo_counter_ = -1;
     combo_points_ = 0;
     tspin_kind_ = 0;
@@ -26,11 +26,11 @@ void Scorer::Reset()
 
 void Scorer::Start()
 {
-    if (cleared_lines_ == 0)
+    if (clear_count_ == 0)
         // Combo break
         combo_counter_ = -1;
 
-    cleared_lines_ = 0;
+    clear_count_ = 0;
     combo_points_ = 0;
     tspin_kind_ = 0;
     tspin_points_ = 0;
@@ -39,11 +39,10 @@ void Scorer::Start()
 void Scorer::Commit()
 {
     // Line clear
-    static const int pts_by_lines[] = {0, 100, 300, 500, 800};
-    score_ += pts_by_lines[cleared_lines_] * level_;
+    score_ += clear_points_;
 
     // Total lines
-    lines_ += cleared_lines_;
+    lines_ += clear_count_;
     combo_counter_ = std::min(13, combo_counter_ + 1);
     combo_points_ = 50 * get_combo_count() * level_;
     score_ += combo_points_;
@@ -68,7 +67,10 @@ int Scorer::get_combo_count() const
 void Scorer::AddLineClear(int count)
 {
     assert(count > 0 && count < 5);
-    cleared_lines_ = count;
+    clear_count_ = count;
+
+    static const int pts_by_lines[] = {0, 100, 300, 500, 800};
+    clear_points_ = pts_by_lines[clear_count_] * level_;
 }
 
 void Scorer::AddSoftDrop()
@@ -163,4 +165,9 @@ int Scorer::GetTspinKind() const
 int Scorer::GetTspinPoints() const
 {
     return tspin_points_;
+}
+
+int Scorer::GetClearPoints() const
+{
+    return clear_points_;
 }

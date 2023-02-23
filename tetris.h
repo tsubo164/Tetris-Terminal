@@ -64,6 +64,7 @@ public:
     int GetComboPoints() const;
     int GetTspinKind() const;
     int GetTspinPoints() const;
+    int GetClearPoints() const;
 
     // Debug
     void SetDebugMode();

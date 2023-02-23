@@ -422,6 +422,11 @@ int Tetris::GetTspinPoints() const
     return scorer_.GetTspinPoints();
 }
 
+int Tetris::GetClearPoints() const
+{
+    return scorer_.GetClearPoints();
+}
+
 void Tetris::SetDebugMode()
 {
     debug_mode_ = true;

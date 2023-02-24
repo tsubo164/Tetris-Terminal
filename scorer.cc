@@ -19,6 +19,7 @@ void Scorer::Reset()
 
     // For each locking
     clear_count_ = 0;
+    clear_points_ = 0;
     combo_counter_ = -1;
     combo_points_ = 0;
 }
@@ -30,6 +31,7 @@ void Scorer::Start()
         combo_counter_ = -1;
 
     clear_count_ = 0;
+    clear_points_ = 0;
     combo_points_ = 0;
 }
 
@@ -45,10 +47,6 @@ void Scorer::Commit()
     // Level
     if (lines_ >= 5 * level_)
         level_++;
-
-    clear_count_ = 0;
-    clear_points_ = 0;
-    combo_points_ = 0;
 }
 
 int Scorer::get_combo_count() const

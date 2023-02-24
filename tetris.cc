@@ -232,12 +232,10 @@ void Tetris::UpdateFrame(int action)
         return;
 
     // Clears lines
-    scorer_.Commit();
-    if (GetClearedLineCount() > 0) {
-        gravity_ = get_gravity(GetLevel());
-
+    if (GetClearedLineCount() > 0 || tspin_kind_) {
+        scorer_.Commit();
         field_.ClearLines();
-        need_spawn_ = true;
+        gravity_ = get_gravity(GetLevel());
     }
 
     // Spawn
@@ -300,9 +298,8 @@ void Tetris::UpdateFrame(int action)
         if (clear_count > 0)
             // hide
             tetromino_.kind = E;
-        else
-            // spawn
-            need_spawn_ = true;
+
+        need_spawn_ = true;
     }
     else {
         tick_lock_delay_timer();

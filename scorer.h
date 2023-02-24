@@ -2,7 +2,6 @@
 #define SCORER_H
 
 #include "point.h"
-#include "field.h"
 
 enum TspinKind {
     TSPIN_NONE = 0,
@@ -22,7 +21,6 @@ public:
     void AddLineClear(int count, int tspin_kind);
     void AddSoftDrop();
     void AddHardDrop(int distance);
-    void AddTspin(Point kick_offset, Point pos, int rotation, const Field &field);
 
     int GetScore() const;
     int GetLines() const;

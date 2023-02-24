@@ -63,7 +63,6 @@ public:
     int GetComboCounter() const;
     int GetComboPoints() const;
     int GetTspinKind() const;
-    int GetTspinPoints() const;
     int GetClearPoints() const;
 
     // Debug
@@ -104,12 +103,14 @@ private:
     float gravity_ = 1./60;
     int last_action_ = 0;
     Point last_kick_ = {};
+    int tspin_kind_ = 0;
 
     bool drop_piece(Tetromino &tet);
     bool move_piece(int action);
     bool has_landed();
     void hold_piece();
     void update_ghost();
+    int detect_tspin() const;
 
     void start_lock_delay_timer();
     void reset_lock_delay_timer();

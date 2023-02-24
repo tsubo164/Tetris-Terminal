@@ -232,8 +232,8 @@ void Tetris::UpdateFrame(int action)
         return;
 
     // Clears lines
+    scorer_.Commit();
     if (GetClearedLineCount() > 0) {
-        scorer_.Commit();
         gravity_ = get_gravity(GetLevel());
 
         field_.ClearLines();
@@ -247,6 +247,7 @@ void Tetris::UpdateFrame(int action)
             reset_all_timers();
             is_hold_available_ = true;
             last_kick_ = Point();
+            tspin_kind_ = 0;
         }
         else {
             is_game_over_ = true;
@@ -290,27 +291,68 @@ void Tetris::UpdateFrame(int action)
     if (lock_delay_timer_ == 0 && landed) {
         field_.SetPiece(GetCurrentPiece());
 
-        const int cleared_lines = GetClearedLineCount();
+        const int clear_count = GetClearedLineCount();
 
-        // T-Spin
-        if (tetromino_.kind == T && (last_action_ & (ROT_LEFT | ROT_RIGHT)))
-            scorer_.AddTspin(last_kick_, tetromino_.pos, tetromino_.rotation, field_);
+        // T-Spin and line clear
+        tspin_kind_ = detect_tspin();
+        scorer_.AddLineClear(clear_count, tspin_kind_);
 
-        if (cleared_lines > 0) {
-            // start clear lines
-            scorer_.AddLineClear(cleared_lines);
+        if (clear_count > 0)
+            // hide
             tetromino_.kind = E;
-        }
-        else {
+        else
             // spawn
             need_spawn_ = true;
-        }
     }
     else {
         tick_lock_delay_timer();
     }
 
     frame_++;
+}
+
+int Tetris::detect_tspin() const
+{
+    if (tetromino_.kind != T)
+        return TSPIN_NONE;
+
+    if (!(last_action_ & (ROT_LEFT | ROT_RIGHT)))
+        return TSPIN_NONE;
+
+    if (GetClearedLineCount() == 4)
+        return TSPIN_NONE;
+
+    // Detection
+    const Piece tcorners = GetTcorners(tetromino_.rotation);
+    int front_occluded = 0;
+    int back_occluded = 0;
+
+    for (int i = 0; i < 4; i++) {
+        const Point world = tetromino_.pos + tcorners.cells[i];
+        const int kind = GetFieldCellKind(world);
+
+        if (!IsEmptyCell(kind)) {
+            if (i == 0 || i == 1)
+                front_occluded++;
+            if (i == 2 || i == 3)
+                back_occluded++;
+        }
+    }
+
+    // Kind
+    int tspin_kind = TSPIN_NONE;
+
+    if (front_occluded == 2 && back_occluded == 1)
+        tspin_kind = TSPIN_NORMAL;
+    else if (front_occluded == 1 && back_occluded == 2)
+        tspin_kind = TSPIN_MINI;
+    else
+        tspin_kind = TSPIN_NONE;
+
+    if (tspin_kind == TSPIN_MINI && abs(last_kick_.x) == 1 && abs(last_kick_.y) == 2)
+        tspin_kind = TSPIN_NORMAL;
+
+    return tspin_kind;
 }
 
 int Tetris::GetFieldCellKind(Point pos) const
@@ -418,12 +460,7 @@ int Tetris::GetComboPoints() const
 
 int Tetris::GetTspinKind() const
 {
-    return scorer_.GetTspinKind();
-}
-
-int Tetris::GetTspinPoints() const
-{
-    return scorer_.GetTspinPoints();
+    return tspin_kind_;
 }
 
 int Tetris::GetClearPoints() const

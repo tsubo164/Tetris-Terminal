@@ -19,7 +19,7 @@ public:
     void Start();
     void Commit();
 
-    void AddLineClear(int count);
+    void AddLineClear(int count, int tspin_kind);
     void AddSoftDrop();
     void AddHardDrop(int distance);
     void AddTspin(Point kick_offset, Point pos, int rotation, const Field &field);
@@ -27,11 +27,9 @@ public:
     int GetScore() const;
     int GetLines() const;
     int GetLevel() const;
+    int GetClearPoints() const;
     int GetComboCounter() const;
     int GetComboPoints() const;
-    int GetTspinKind() const;
-    int GetTspinPoints() const;
-    int GetClearPoints() const;
 
 private:
     int score_ = 0;
@@ -43,8 +41,6 @@ private:
     int clear_points_ = 0;
     int combo_counter_ = -1;
     int combo_points_ = 0;
-    int tspin_kind_ = 0;
-    int tspin_points_ = 0;
 
     int get_combo_count() const;
 };

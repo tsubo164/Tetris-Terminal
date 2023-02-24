@@ -368,41 +368,24 @@ static void draw_message()
     const int tspin = tetris.GetTspinKind();
 
     const bool send =
-        (tspin && line_count == 0 && clearing_timer == -1) ||
-        (tspin && line_count > 0  && clearing_timer == CLEARING_DURATION);
+        (tspin != TSPIN_NONE && line_count == 0) ||
+        (line_count > 0  && clearing_timer == 0);
 
     if (send) {
+        if (tspin == TSPIN_NONE) {
+            switch (line_count) {
+            case 1: message_queue_.push_back({"SINGLE", frame}); break;
+            case 2: message_queue_.push_back({"DOUBLE", frame}); break;
+            case 3: message_queue_.push_back({"TRIPLE", frame}); break;
+            case 4: message_queue_.push_back({"TETRIS", frame}); break;
+            default: break;
+            }
+        }
         if (tspin == TSPIN_NORMAL) {
-            message_queue_.push_back({"TSPIN", frame});
-            message_queue_.push_back({std::to_string(tetris.GetTspinPoints()), frame});
+            message_queue_.push_back({"T-SPIN", frame});
         }
         else if (tspin == TSPIN_MINI) {
-            message_queue_.push_back({"MINI", frame});
-            message_queue_.push_back({"TSPIN", frame});
-            message_queue_.push_back({std::to_string(tetris.GetTspinPoints()), frame});
-        }
-    }
-
-    if (line_count > 0 && clearing_timer == 0) {
-        switch (line_count) {
-        case 1:
-            message_queue_.push_back({"SNGL1", frame});
-            break;
-
-        case 2:
-            message_queue_.push_back({"DBL2", frame});
-            break;
-
-        case 3:
-            message_queue_.push_back({"TRPL3", frame});
-            break;
-
-        case 4:
-            message_queue_.push_back({"TTRS4", frame});
-            break;
-
-        default:
-            break;
+            message_queue_.push_back({"T-SPIN MINI", frame});
         }
 
         message_queue_.push_back({std::to_string(tetris.GetClearPoints()), frame});

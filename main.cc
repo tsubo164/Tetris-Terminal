@@ -364,12 +364,12 @@ static void draw_info()
 
 static void draw_message()
 {
-    const int count = tetris.GetClearedLineCount();
+    const int line_count = tetris.GetClearedLineCount();
     const int tspin = tetris.GetTspinKind();
 
     const bool send =
-        (tspin && count == 0 && clearing_timer == -1) ||
-        (tspin && count > 0  && clearing_timer == CLEARING_DURATION);
+        (tspin && line_count == 0 && clearing_timer == -1) ||
+        (tspin && line_count > 0  && clearing_timer == CLEARING_DURATION);
 
     if (send) {
         if (tspin == TSPIN_NORMAL) {
@@ -383,8 +383,8 @@ static void draw_message()
         }
     }
 
-    if (clearing_timer == 0) {
-        switch (count) {
+    if (line_count > 0 && clearing_timer == 0) {
+        switch (line_count) {
         case 1:
             message_queue_.push_back({"SNGL1", frame});
             break;
@@ -405,11 +405,9 @@ static void draw_message()
             break;
         }
 
-        if (count)
-            message_queue_.push_back({std::to_string(tetris.GetClearPoints()), frame});
+        message_queue_.push_back({std::to_string(tetris.GetClearPoints()), frame});
     }
 
-    /*
     const int combo_count = tetris.GetComboCounter();
 
     if (combo_count > 0 && clearing_timer == 0) {
@@ -417,7 +415,6 @@ static void draw_message()
         message_queue_.push_back({"COMBO", frame});
         message_queue_.push_back({std::to_string(tetris.GetComboPoints()), frame});
     }
-    */
 
     while (!message_queue_.empty()) {
         if (frame - message_queue_.front().start > 60)
@@ -426,7 +423,7 @@ static void draw_message()
             break;
     }
 
-    int x = -7, y = 10;
+    int x = -7, y = 14;
     for (const auto &msg: message_queue_) {
         draw_str(x, y--, msg.str.c_str());
     }

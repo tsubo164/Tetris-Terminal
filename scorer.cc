@@ -39,12 +39,9 @@ void Scorer::Start()
 void Scorer::Commit()
 {
     // Line clear
-    score_ += clear_points_;
-
-    // Total lines
     lines_ += clear_count_;
-    combo_counter_ = std::min(13, combo_counter_ + 1);
-    combo_points_ = 50 * get_combo_count() * level_;
+    score_ += clear_points_;
+    // Combo
     score_ += combo_points_;
 
     // Level
@@ -66,11 +63,17 @@ int Scorer::get_combo_count() const
 
 void Scorer::AddLineClear(int count)
 {
+    // Clear line count
     assert(count > 0 && count < 5);
     clear_count_ = count;
 
+    // Clear line points
     static const int pts_by_lines[] = {0, 100, 300, 500, 800};
     clear_points_ = pts_by_lines[clear_count_] * level_;
+
+    // Combo counter
+    combo_counter_ = std::min(13, combo_counter_ + 1);
+    combo_points_ = 50 * get_combo_count() * level_;
 }
 
 void Scorer::AddSoftDrop()

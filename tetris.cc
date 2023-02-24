@@ -445,7 +445,11 @@ void Tetris::ChangeTetrominoKind(int kind)
     if (!IsSolidCell(kind))
         return;
 
-    tetromino_.kind = kind;
+    Tetromino test = tetromino_;
+    test.kind = kind;
+
+    if (test.CanFit(field_))
+        tetromino_.kind = kind;
 }
 
 int Tetris::GetLockDelayTimer() const

@@ -22,7 +22,7 @@ public:
     void AddLineClear(int count);
     void AddSoftDrop();
     void AddHardDrop(int distance);
-    void AddTspin(Point pos, int rotation, const Field &field);
+    void AddTspin(Point kick_offset, Point pos, int rotation, const Field &field);
 
     int GetScore() const;
     int GetLines() const;

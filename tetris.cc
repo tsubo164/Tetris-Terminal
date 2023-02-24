@@ -173,8 +173,11 @@ bool Tetris::move_piece(int action)
     if (action & ROT_RIGHT)
         moved.rotation = (current.rotation + 1) % 4;
 
-    if (moved.rotation != current.rotation)
+    if (moved.rotation != current.rotation) {
+        const Point old_pos = moved.pos;
         has_moved = has_moved || moved.KickWall(field_, current.rotation);
+        last_kick_ = old_pos - moved.pos;
+    }
 
     // Commit move
     if (has_moved)
@@ -243,6 +246,7 @@ void Tetris::UpdateFrame(int action)
             scorer_.Start();
             reset_all_timers();
             is_hold_available_ = true;
+            last_kick_ = Point();
         }
         else {
             is_game_over_ = true;
@@ -290,7 +294,7 @@ void Tetris::UpdateFrame(int action)
 
         // T-Spin
         if (tetromino_.kind == T && (last_action_ & (ROT_LEFT | ROT_RIGHT)))
-            scorer_.AddTspin(tetromino_.pos, tetromino_.rotation, field_);
+            scorer_.AddTspin(last_kick_, tetromino_.pos, tetromino_.rotation, field_);
 
         if (cleared_lines > 0) {
             // start clear lines

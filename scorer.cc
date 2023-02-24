@@ -1,6 +1,7 @@
 #include "scorer.h"
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 
 Scorer::Scorer()
 {
@@ -86,7 +87,7 @@ void Scorer::AddHardDrop(int distance)
     score_ += 2 * distance;
 }
 
-void Scorer::AddTspin(Point pos, int rotation, const Field &field)
+void Scorer::AddTspin(Point kick_offset, Point pos, int rotation, const Field &field)
 {
     // Tetris will never make t-spin
     const int cleared_lines = field.GetClearedLineCount();
@@ -117,6 +118,9 @@ void Scorer::AddTspin(Point pos, int rotation, const Field &field)
         tspin_kind_ = TSPIN_MINI;
     else
         tspin_kind_ = TSPIN_NONE;
+
+    if (tspin_kind_ == TSPIN_MINI && abs(kick_offset.x) == 1 && abs(kick_offset.y) == 2)
+        tspin_kind_ = TSPIN_NORMAL;
 
     // Points
     static const int tspin_points[][4] = {

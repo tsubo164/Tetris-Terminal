@@ -103,6 +103,7 @@ private:
     float gravity_drop_ = 0;
     float gravity_ = 1./60;
     int last_action_ = 0;
+    Point last_kick_ = {};
 
     bool drop_piece(Tetromino &tet);
     bool move_piece(int action);

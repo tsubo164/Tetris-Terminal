@@ -232,7 +232,7 @@ void Tetris::UpdateFrame(int action)
         return;
 
     // Clears lines
-    if (GetClearedLineCount() > 0 || tspin_kind_) {
+    if (GetClearedLineCount() > 0 || GetTspinKind() > 0) {
         scorer_.Commit();
         field_.ClearLines();
         gravity_ = get_gravity(GetLevel());
@@ -289,15 +289,9 @@ void Tetris::UpdateFrame(int action)
     if (lock_delay_timer_ == 0 && landed) {
         field_.SetPiece(GetCurrentPiece());
 
-        const int clear_count = GetClearedLineCount();
-
         // T-Spin and line clear
         tspin_kind_ = detect_tspin();
-        scorer_.AddLineClear(clear_count, tspin_kind_);
-
-        if (clear_count > 0)
-            // hide
-            tetromino_.kind = E;
+        scorer_.AddLineClear(GetClearedLineCount(), tspin_kind_);
 
         need_spawn_ = true;
     }
@@ -463,6 +457,11 @@ int Tetris::GetTspinKind() const
 int Tetris::GetClearPoints() const
 {
     return scorer_.GetClearPoints();
+}
+
+int Tetris::GetBackToBackCounter() const
+{
+    return scorer_.GetBackToBackCounter();
 }
 
 void Tetris::SetDebugMode()

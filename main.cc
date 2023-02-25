@@ -190,6 +190,9 @@ static void draw_blank(int x, int y, bool is_flashing = false)
 
 static void draw_tetromino()
 {
+    if (clearing_timer >=0)
+        return;
+
     if (tetris.IsGameOver())
         return;
 
@@ -399,6 +402,13 @@ static void draw_message()
         message_queue_.push_back({std::to_string(tetris.GetComboPoints()), frame});
     }
 
+    const int back_to_back = tetris.GetBackToBackCounter();
+
+    if (back_to_back > 0 && clearing_timer == 0) {
+        message_queue_.push_back({std::to_string(back_to_back), frame});
+        message_queue_.push_back({"BACK TO BACK", frame});
+    }
+
     while (!message_queue_.empty()) {
         if (frame - message_queue_.front().start > 60)
             message_queue_.pop_front();
@@ -480,10 +490,11 @@ void render()
 
     draw_borders();
     draw_field();
-    draw_effect();
 
     draw_ghost();
     draw_tetromino();
+
+    draw_effect();
 
     draw_info();
     draw_message();

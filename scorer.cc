@@ -26,10 +26,6 @@ void Scorer::Reset()
 
 void Scorer::Start()
 {
-    if (clear_count_ == 0)
-        // Combo break
-        combo_counter_ = -1;
-
     clear_count_ = 0;
     clear_points_ = 0;
     combo_points_ = 0;
@@ -81,6 +77,24 @@ void Scorer::AddLineClear(int count, int tspin_kind)
     // Combo counter
     combo_counter_ = std::min(13, combo_counter_ + 1);
     combo_points_ = 50 * get_combo_count() * level_;
+
+    if (clear_count_ == 0)
+        // Combo break
+        combo_counter_ = -1;
+
+    // Back to Back
+    if (clear_count_ == 4)
+        diffcult_counter_++;
+    else if (clear_count_ > 0 && tspin_kind > 0)
+        diffcult_counter_++;
+    else if (tspin_kind == 0)
+        // Back to Back break
+        diffcult_counter_ = -1;
+
+    if (diffcult_counter_ > 0) {
+        clear_points_ *= 1.5;
+        combo_points_ *= 1.5;
+    }
 }
 
 void Scorer::AddSoftDrop()
@@ -121,4 +135,9 @@ int Scorer::GetComboCounter() const
 int Scorer::GetComboPoints() const
 {
     return combo_points_;
+}
+
+int Scorer::GetBackToBackCounter() const
+{
+    return diffcult_counter_;
 }

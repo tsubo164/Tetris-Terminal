@@ -28,6 +28,7 @@ public:
     int GetClearPoints() const;
     int GetComboCounter() const;
     int GetComboPoints() const;
+    int GetBackToBackCounter() const;
 
 private:
     int score_ = 0;
@@ -39,6 +40,7 @@ private:
     int clear_points_ = 0;
     int combo_counter_ = -1;
     int combo_points_ = 0;
+    int diffcult_counter_ = -1;
 
     int get_combo_count() const;
 };

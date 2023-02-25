@@ -17,11 +17,8 @@ void Scorer::Reset()
     lines_ = 0;
     level_ = 1;
 
-    // For each locking
-    clear_count_ = 0;
-    clear_points_ = 0;
     combo_counter_ = -1;
-    combo_points_ = 0;
+    Start();
 }
 
 void Scorer::Start()
@@ -75,12 +72,14 @@ void Scorer::AddLineClear(int count, int tspin_kind)
     clear_points_ = point_table[tspin_kind][clear_count_] * level_;
 
     // Combo counter
-    combo_counter_ = std::min(13, combo_counter_ + 1);
-    combo_points_ = 50 * get_combo_count() * level_;
-
-    if (clear_count_ == 0)
+    if (clear_count_ > 0) {
+        combo_counter_ = std::min(13, combo_counter_ + 1);
+        combo_points_ = 50 * get_combo_count() * level_;
+    }
+    else {
         // Combo break
         combo_counter_ = -1;
+    }
 
     // Back to Back
     if (clear_count_ == 4)

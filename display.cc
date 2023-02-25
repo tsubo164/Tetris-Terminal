@@ -356,15 +356,6 @@ void Display::draw_message()
         (line_count > 0  && clearing_timer_ == 0);
 
     if (send) {
-        if (tspin == TSPIN_NONE) {
-            switch (line_count) {
-            case 1: message_queue_.push_back({"SINGLE", frame_}); break;
-            case 2: message_queue_.push_back({"DOUBLE", frame_}); break;
-            case 3: message_queue_.push_back({"TRIPLE", frame_}); break;
-            case 4: message_queue_.push_back({"TETRIS", frame_}); break;
-            default: break;
-            }
-        }
         if (tspin == TSPIN_NORMAL) {
             message_queue_.push_back({"T-SPIN", frame_});
         }
@@ -372,30 +363,43 @@ void Display::draw_message()
             message_queue_.push_back({"T-SPIN MINI", frame_});
         }
 
-        message_queue_.push_back({std::to_string(tetris_.GetClearPoints()), frame_});
+        switch (line_count) {
+        case 1: message_queue_.push_back({"SINGLE", frame_}); break;
+        case 2: message_queue_.push_back({"DOUBLE", frame_}); break;
+        case 3: message_queue_.push_back({"TRIPLE", frame_}); break;
+        case 4: message_queue_.push_back({"TETRIS", frame_}); break;
+        default: break;
+        }
+
+        char buf[64] = {'\0'};
+        sprintf(buf, "%+5d", tetris_.GetClearPoints());
+        message_queue_.push_back({buf, frame_});
     }
 
     const int combo_count = tetris_.GetComboCounter();
 
     if (combo_count > 0 && clearing_timer_ == 0) {
-        message_queue_.push_back({std::to_string(combo_count), frame_});
-        message_queue_.push_back({"COMBO", frame_});
-        message_queue_.push_back({std::to_string(tetris_.GetComboPoints()), frame_});
+        char buf[64] = {'\0'};
+        sprintf(buf, "%d COMBO", combo_count);
+        message_queue_.push_back({buf, frame_});
+        sprintf(buf, "%+5d", tetris_.GetComboPoints());
+        message_queue_.push_back({buf, frame_});
     }
 
     const int back_to_back = tetris_.GetBackToBackCounter();
 
     if (back_to_back > 0 && clearing_timer_ == 0) {
-        message_queue_.push_back({std::to_string(back_to_back), frame_});
-        message_queue_.push_back({"BACK TO BACK", frame_});
+        char buf[64] = {'\0'};
+        sprintf(buf, "%d BACK TO BACK", back_to_back);
+        message_queue_.push_back({buf, frame_});
     }
 
-    while (!message_queue_.empty()) {
-        if (frame_ - message_queue_.front().start > 60)
-            message_queue_.pop_front();
-        else
-            break;
-    }
+    message_queue_.erase(
+            std::remove_if(
+                message_queue_.begin(),
+                message_queue_.end(),
+                [=](const Message &msg) { return frame_ - msg.start > 60; }),
+            message_queue_.end());
 
     int x = -7, y = 14;
     for (const auto &msg: message_queue_) {

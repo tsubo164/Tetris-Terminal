@@ -291,7 +291,7 @@ void Tetris::UpdateFrame(int action)
 
         // T-Spin and line clear
         tspin_kind_ = detect_tspin();
-        scorer_.AddLineClear(GetClearedLineCount(), tspin_kind_);
+        scorer_.AddLineClear(GetClearedLineCount(), tspin_kind_, IsPerfectClear());
 
         need_spawn_ = true;
     }
@@ -359,6 +359,11 @@ int Tetris::GetClearedLineCount() const
 void Tetris::GetClearedLines(int *cleared_line_y) const
 {
     field_.GetClearedLines(cleared_line_y);
+}
+
+bool Tetris::IsPerfectClear() const
+{
+    return field_.IsEmpty();
 }
 
 int Tetris::GetPieceKindList(int index) const

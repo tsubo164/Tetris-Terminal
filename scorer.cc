@@ -54,7 +54,7 @@ int Scorer::get_combo_count() const
     return combo_counts[count];
 }
 
-void Scorer::AddLineClear(int count, int tspin_kind)
+void Scorer::AddLineClear(int count, int tspin_kind, bool perfect_cleared)
 {
     assert(count >= 0 && count <= 4);
     assert(tspin_kind >= TSPIN_NONE && tspin_kind <= TSPIN_MINI);
@@ -70,6 +70,14 @@ void Scorer::AddLineClear(int count, int tspin_kind)
         { 100,  200,   400,    0,   0}  // T-Spin Mini
     };
     clear_points_ = point_table[tspin_kind][clear_count_] * level_;
+
+    // Perfect clear
+    if (perfect_cleared) {
+        static const int perfect_point_table[5] = {
+              0,  800,  1200, 1800, 2000
+        };
+        clear_points_ = perfect_point_table[clear_count_] * level_;
+    }
 
     // Combo counter
     if (clear_count_ > 0) {

@@ -46,6 +46,7 @@ public:
     int GetFieldCellKind(Point pos) const;
     int GetClearedLineCount() const;
     void GetClearedLines(int *cleared_line_y) const;
+    bool IsPerfectClear() const;
 
     // Piece
     int GetPieceKindList(int index) const;

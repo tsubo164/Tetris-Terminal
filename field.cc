@@ -32,6 +32,15 @@ void Field::Clear()
     lines_.fill(Line());
 }
 
+bool Field::IsEmpty() const
+{
+    for (const auto &line: lines_)
+        if (line.cell_count > 0 && !line.is_cleared)
+            return false;
+
+    return true;
+}
+
 int Field::GetCellKind(Point pos) const
 {
     if (is_inside_hole(pos))

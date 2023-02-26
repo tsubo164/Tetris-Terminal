@@ -356,6 +356,10 @@ void Display::draw_message()
         (line_count > 0  && clearing_timer_ == 0);
 
     if (send) {
+        if (tetris_.IsPerfectClear() && clearing_timer_ == 0) {
+            message_queue_.push_back({"PERFECT CLEAR", frame_});
+        }
+
         if (tspin == TSPIN_NORMAL) {
             message_queue_.push_back({"T-SPIN", frame_});
         }

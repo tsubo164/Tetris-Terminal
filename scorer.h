@@ -18,7 +18,7 @@ public:
     void Start();
     void Commit();
 
-    void AddLineClear(int count, int tspin_kind);
+    void AddLineClear(int count, int tspin_kind, bool perfect_cleared);
     void AddSoftDrop();
     void AddHardDrop(int distance);
 

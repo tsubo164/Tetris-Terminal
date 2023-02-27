@@ -527,6 +527,11 @@ Point Tetris::GetTetrominoPos() const
     return tetromino_.pos;
 }
 
+void Tetris::SetFieldCellKind(Point pos, int kind)
+{
+    return field_.SetCellKind(pos, kind);
+}
+
 int Tetris::GetLockDelayTimer() const
 {
     return lock_delay_timer_;

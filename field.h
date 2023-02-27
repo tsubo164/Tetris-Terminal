@@ -19,6 +19,7 @@ public:
 
     // Cell
     int GetCellKind(Point pos) const;
+    void SetCellKind(Point pos, int kind);
     void SetPiece(const Piece &piece);
     void SetTopHole(int start_x, int end_x);
 

@@ -155,6 +155,44 @@ void find_piece(const Cell4 &cells, int &kind, int &rotation, Point &pos)
             pos = p0 + Point(0, 1);
         }
         else
+        // J
+        if (corner0 == 1 &&
+            corner1 == 1 &&
+            corner2 == 1 &&
+            corner3 == 0) {
+            kind = J;
+            rotation = 1;
+            pos = p0 + Point(0, 1);
+        }
+        else
+        if (corner0 == 1 &&
+            corner1 == 1 &&
+            corner2 == 0 &&
+            corner3 == 1) {
+            kind = J;
+            rotation = 3;
+            pos = p0 + Point(1, 1);
+        }
+        else
+        // L
+        if (corner0 == 1 &&
+            corner1 == 0 &&
+            corner2 == 1 &&
+            corner3 == 1) {
+            kind = L;
+            rotation = 1;
+            pos = p0 + Point(0, 1);
+        }
+        else
+        if (corner0 == 0 &&
+            corner1 == 1 &&
+            corner2 == 1 &&
+            corner3 == 1) {
+            kind = L;
+            rotation = 3;
+            pos = p0 + Point(1, 1);
+        }
+        else
         // T
         if (corner0 == 1 &&
             corner1 == 0 &&
@@ -185,12 +223,15 @@ void setup_field(Tetris &tetris, const Grid &grid)
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < 10; x++) {
             const int kind = grid[y][x];
+            const Point pos = {x, HEIGHT - y - 1};
 
-            if (kind == X)
-                *cell++ = {x, HEIGHT - y - 1};
-
-            if (cell == cells.end())
-                break;
+            if (kind == X) {
+                assert(cell != cells.end());
+                *cell++ = pos;
+            }
+            else if (kind == Y) {
+                tetris.SetFieldCellKind(pos, I);
+            }
         }
     }
 
@@ -203,6 +244,12 @@ void setup_field(Tetris &tetris, const Grid &grid)
     tetris.SetTetrominoKind(kind);
     tetris.SetTetrominoRotation(rotation);
     tetris.SetTetrominoPos(pos);
+}
+
+void update_frame_ntimes(Tetris &tetris, int operation, int times)
+{
+    for (int i = 0; i < times; i++)
+        tetris.UpdateFrame(operation);
 }
 
 void AssertEq(int expected, int actual, int line)
@@ -375,6 +422,24 @@ void test()
     }
     {
         const Grid grid = {
+            {0,0,0,0,0,0,0,X,0,0},
+            {0,0,0,0,0,0,0,X,0,0},
+            {0,0,0,0,0,0,0,X,X,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        ASSERT_EQ(L, tetris.GetTetrominoKind());
+        ASSERT_EQ(1, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(7, 1), tetris.GetTetrominoPos());
+    }
+    {
+        const Grid grid = {
             {X,X,X,0,0,0,0,0,0,0},
             {X,0,0,0,0,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
@@ -390,6 +455,24 @@ void test()
         ASSERT_EQ(L, tetris.GetTetrominoKind());
         ASSERT_EQ(2, tetris.GetTetrominoRotation());
         ASSERT_EQ(Point(1, 2), tetris.GetTetrominoPos());
+    }
+    {
+        const Grid grid = {
+            {0,0,0,0,X,X,0,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        ASSERT_EQ(L, tetris.GetTetrominoKind());
+        ASSERT_EQ(3, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(5, 1), tetris.GetTetrominoPos());
     }
     {
         const Grid grid = {
@@ -411,6 +494,24 @@ void test()
     }
     {
         const Grid grid = {
+            {0,0,0,0,0,X,X,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        ASSERT_EQ(J, tetris.GetTetrominoKind());
+        ASSERT_EQ(1, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(5, 1), tetris.GetTetrominoPos());
+    }
+    {
+        const Grid grid = {
             {0,0,0,0,0,0,X,X,X,0},
             {0,0,0,0,0,0,0,0,X,0},
             {0,0,0,0,0,0,0,0,0,0},
@@ -426,6 +527,24 @@ void test()
         ASSERT_EQ(J, tetris.GetTetrominoKind());
         ASSERT_EQ(2, tetris.GetTetrominoRotation());
         ASSERT_EQ(Point(7, 2), tetris.GetTetrominoPos());
+    }
+    {
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,0,X},
+            {0,0,0,0,0,0,0,0,0,X},
+            {0,0,0,0,0,0,0,0,X,X},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        ASSERT_EQ(J, tetris.GetTetrominoKind());
+        ASSERT_EQ(3, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(9, 1), tetris.GetTetrominoPos());
     }
     {
         const Grid grid = {
@@ -498,5 +617,56 @@ void test()
         ASSERT_EQ(T, tetris.GetTetrominoKind());
         ASSERT_EQ(3, tetris.GetTetrominoRotation());
         ASSERT_EQ(Point(5, 1), tetris.GetTetrominoPos());
+    }
+    // Single ===========================================
+    {
+        const Grid grid = {
+            {0,0,0,0,X,X,X,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {Y,Y,Y,Y,Y,0,Y,Y,Y,Y},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(1, tetris.GetClearedLineCount());
+        ASSERT_EQ(100, tetris.GetClearPoints());
+    }
+    // Double ===========================================
+    {
+        const Grid grid = {
+            {0,0,0,0,0,X,X,0,0,0},
+            {0,0,0,0,0,X,0,0,0,0},
+            {Y,Y,Y,Y,Y,X,Y,Y,Y,Y},
+            {Y,Y,Y,Y,Y,0,Y,Y,Y,Y},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        ASSERT_EQ(J, tetris.GetTetrominoKind());
+        ASSERT_EQ(1, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(5, 2), tetris.GetTetrominoPos());
+
+        tetris.UpdateFrame(MOV_DOWN);
+
+        ASSERT_EQ(Point(5, 1), tetris.GetTetrominoPos());
+        ASSERT_EQ(29, tetris.GetLockDelayTimer());
+
+        update_frame_ntimes(tetris, 0, 30);
+
+        ASSERT_EQ(2, tetris.GetClearedLineCount());
+        ASSERT_EQ(300, tetris.GetClearPoints());
     }
 }

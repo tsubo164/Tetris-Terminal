@@ -76,6 +76,7 @@ public:
     int GetTetrominoRotation() const;
     void SetTetrominoPos(Point pos);
     Point GetTetrominoPos() const;
+    void SetFieldCellKind(Point pos, int kind);
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
     float GetGravity() const;

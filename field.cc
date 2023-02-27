@@ -52,21 +52,26 @@ int Field::GetCellKind(Point pos) const
     return lines_[pos.y][pos.x];
 }
 
+void Field::SetCellKind(Point pos, int kind)
+{
+    const int x = pos.x, y = pos.y;
+
+    assert(IsEmptyCell(lines_[y][x]));
+    assert(is_inside_field(pos));
+
+    lines_[y].SetCell(x, kind);
+
+    if (lines_[y].IsFilled())
+        cleared_line_count_++;
+}
+
 void Field::SetPiece(const Piece &piece)
 {
     for (auto pos: piece.cells) {
         if (is_inside_hole(pos))
             continue;
 
-        const int x = pos.x, y = pos.y;
-
-        assert(IsEmptyCell(lines_[y][x]));
-        assert(is_inside_field(pos));
-
-        lines_[y].SetCell(x, piece.kind);
-
-        if (lines_[y].IsFilled())
-            cleared_line_count_++;
+        SetCellKind(pos, piece.kind);
     }
 }
 

@@ -479,7 +479,7 @@ bool Tetris::IsDebugMode() const
     return debug_mode_;
 }
 
-void Tetris::ChangeTetrominoKind(int kind)
+void Tetris::SetTetrominoKind(int kind)
 {
     if (!IsDebugMode())
         return;
@@ -492,6 +492,39 @@ void Tetris::ChangeTetrominoKind(int kind)
 
     if (test.CanFit(field_))
         tetromino_.kind = kind;
+}
+
+int Tetris::GetTetrominoKind() const
+{
+    return tetromino_.kind;
+}
+
+void Tetris::SetTetrominoRotation(int rotation)
+{
+    Tetromino test = tetromino_;
+    test.rotation = rotation;
+
+    if (test.CanFit(field_))
+        tetromino_.rotation = rotation;
+}
+
+int Tetris::GetTetrominoRotation() const
+{
+    return tetromino_.rotation;
+}
+
+void Tetris::SetTetrominoPos(Point pos)
+{
+    Tetromino test = tetromino_;
+    test.pos = pos;
+
+    if (test.CanFit(field_))
+        tetromino_.pos = pos;
+}
+
+Point Tetris::GetTetrominoPos() const
+{
+    return tetromino_.pos;
 }
 
 int Tetris::GetLockDelayTimer() const

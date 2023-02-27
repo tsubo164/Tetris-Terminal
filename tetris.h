@@ -70,7 +70,12 @@ public:
     // Debug
     void SetDebugMode();
     bool IsDebugMode() const;
-    void ChangeTetrominoKind(int kind);
+    void SetTetrominoKind(int kind);
+    int GetTetrominoKind() const;
+    void SetTetrominoRotation(int rotation);
+    int GetTetrominoRotation() const;
+    void SetTetrominoPos(Point pos);
+    Point GetTetrominoPos() const;
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
     float GetGravity() const;

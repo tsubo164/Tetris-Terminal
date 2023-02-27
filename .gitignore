@@ -1,4 +1,5 @@
 tetris
+test_main
 *.d
 *.o
 *.swp

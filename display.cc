@@ -519,7 +519,7 @@ int Display::input_key()
             const Piece piece = tetris_.GetCurrentPiece();
             int kind = piece.kind;
             kind = kind == 7 ? 1 : kind + 1;
-            tetris_.ChangeTetrominoKind(kind);
+            tetris_.SetTetrominoKind(kind);
         }
         break;
 

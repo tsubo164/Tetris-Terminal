@@ -6,7 +6,7 @@ RM      := rm -f
 
 SRCS    := display field main piece scorer tetris tetromino
 
-.PHONY: clean
+.PHONY: clean test
 
 TETRIS  := tetris
 OBJS := $(addsuffix .o, $(SRCS))
@@ -20,8 +20,22 @@ $(OBJS): %.o: %.cc
 $(TETRIS): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+# TESTS ======================
+TEST_OBJS = $(filter-out main.o, $(OBJS)) test.o
+
+test_main: $(TEST_OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+test: test_main
+	./test_main
+	@echo "\033[0;32mOK\033[0;39m"
+
+test.o: test.cc
+	$(CC) $(CFLAGS) -o $@ $<
+#TESTS ======================
+
 clean:
-	$(RM) $(TETRIS) *.o *.d
+	$(RM) $(TETRIS) test_main *.o *.d
 
 $(DEPS): %.d: %.cc
 	$(CC) -c -MM $< > $@

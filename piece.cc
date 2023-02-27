@@ -79,7 +79,7 @@ static void init_piece(int kind, int rotation)
 {
     Piece &piece = piece_states[kind][rotation];
     piece.kind = kind;
-    int cell_index = 0;
+    auto cell_pos = piece.cells.begin();
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
@@ -90,10 +90,10 @@ static void init_piece(int kind, int rotation)
                 Point local = Point(x, 4 - y - 1) - Point(1, 2);
                 local = rotate(local, rotation);
 
-                piece.cells[cell_index++] = local;
+                *cell_pos++ = local;
             }
 
-            if (cell_index == 4)
+            if (cell_pos == piece.cells.end())
                 return;
         }
     }

@@ -10,214 +10,54 @@ int main(int argc, char **argv)
     return 0;
 }
 
-enum {
-    Empty = 0,
-    X,
-    Y,
-};
-
 using Grid = std::vector<std::array<int,10>>;
-using Cell4 = std::array<Point,4>;
 
-void find_piece(const Cell4 &cells, int &kind, int &rotation, Point &pos)
+static Point bbox_min(const Piece &piece)
 {
-    Point min = {999, 999}, max = {-999, -999};
-    for (auto pos: cells) {
+    Point min = {9999, 9999};
+    for (auto pos: piece.cells) {
         min.x = std::min(min.x, pos.x);
         min.y = std::min(min.y, pos.y);
-        max.x = std::max(max.x, pos.x);
-        max.y = std::max(max.y, pos.y);
+    }
+    return min;
+}
+
+void find_piece_state(const Piece &piece, int &kind, int &rotation, Point &pos)
+{
+    const Point piece_min = bbox_min(piece);
+
+    for (int k = E + 1; k < T_CORNERS; k++) {
+        for (int r = 0; r < 4; r++) {
+            const Piece pattern = GetPiece(k, r);
+            const Point pattern_min = bbox_min(pattern);
+            bool match = true;
+
+            for (auto piece_pos: piece.cells) {
+                match &= std::any_of(
+                        pattern.cells.begin(),
+                        pattern.cells.end(),
+                        [=](Point pattern_pos){
+                            return piece_pos - piece_min == pattern_pos - pattern_min;
+                        });
+            }
+
+            if (match) {
+                kind = k;
+                rotation = r;
+                pos = piece_min - pattern_min;
+                return;
+            }
+        }
     }
 
-    const Point BOXSIZE = max - min + Point(1, 1);
-    const Point p0 = min, p1 = max;
-    std::swap(min.y, max.y);
-    const Point p2 = min, p3 = max;
-
-    const bool corner0 = std::find(cells.begin(), cells.end(), p0) != cells.end();
-    const bool corner1 = std::find(cells.begin(), cells.end(), p1) != cells.end();
-    const bool corner2 = std::find(cells.begin(), cells.end(), p2) != cells.end();
-    const bool corner3 = std::find(cells.begin(), cells.end(), p3) != cells.end();
-
-    // I
-    if (BOXSIZE.x == 4) {
-        kind = I;
-        rotation = 0;
-        pos = p0 + Point(1, 0);
-    }
-    else if (BOXSIZE.y == 4) {
-        kind = I;
-        rotation = 1;
-        pos = p0 + Point(0, 2);
-    }
-    // O
-    else if (BOXSIZE.x == 2 && BOXSIZE.y == 2) {
-        kind = O;
-        rotation = 0;
-        pos = p0;
-    }
-    else if (BOXSIZE.x == 3 && BOXSIZE.y == 2) {
-        // Z
-        if (corner0 == 0 &&
-            corner1 == 0 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = Z;
-            rotation = 0;
-            pos = p0 + Point(1, 0);
-        }
-        else
-        // S
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 0 &&
-            corner3 == 0) {
-            kind = S;
-            rotation = 0;
-            pos = p0 + Point(1, 0);
-        }
-        else
-        // L
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 0 &&
-            corner3 == 1) {
-            kind = L;
-            rotation = 0;
-            pos = p0 + Point(1, 0);
-        }
-        else
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 1 &&
-            corner3 == 0) {
-            kind = L;
-            rotation = 2;
-            pos = p0 + Point(1, 1);
-        }
-        else
-        // J
-        if (corner0 == 1 &&
-            corner1 == 0 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = J;
-            rotation = 0;
-            pos = p0 + Point(1, 0);
-        }
-        else
-        if (corner0 == 0 &&
-            corner1 == 1 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = J;
-            rotation = 2;
-            pos = p0 + Point(1, 1);
-        }
-        else
-        // T
-        if (corner0 == 1 &&
-            corner1 == 0 &&
-            corner2 == 0 &&
-            corner3 == 1) {
-            kind = T;
-            rotation = 0;
-            pos = p0 + Point(1, 0);
-        }
-        else
-        if (corner0 == 0 &&
-            corner1 == 1 &&
-            corner2 == 1 &&
-            corner3 == 0) {
-            kind = T;
-            rotation = 2;
-            pos = p0 + Point(1, 1);
-        }
-    }
-    else if (BOXSIZE.x == 2 && BOXSIZE.y == 3) {
-        // Z
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 0 &&
-            corner3 == 0) {
-            kind = Z;
-            rotation = 1;
-            pos = p0 + Point(0, 1);
-        }
-        else
-        // S
-        if (corner0 == 0 &&
-            corner1 == 0 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = S;
-            rotation = 1;
-            pos = p0 + Point(0, 1);
-        }
-        else
-        // J
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 1 &&
-            corner3 == 0) {
-            kind = J;
-            rotation = 1;
-            pos = p0 + Point(0, 1);
-        }
-        else
-        if (corner0 == 1 &&
-            corner1 == 1 &&
-            corner2 == 0 &&
-            corner3 == 1) {
-            kind = J;
-            rotation = 3;
-            pos = p0 + Point(1, 1);
-        }
-        else
-        // L
-        if (corner0 == 1 &&
-            corner1 == 0 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = L;
-            rotation = 1;
-            pos = p0 + Point(0, 1);
-        }
-        else
-        if (corner0 == 0 &&
-            corner1 == 1 &&
-            corner2 == 1 &&
-            corner3 == 1) {
-            kind = L;
-            rotation = 3;
-            pos = p0 + Point(1, 1);
-        }
-        else
-        // T
-        if (corner0 == 1 &&
-            corner1 == 0 &&
-            corner2 == 1 &&
-            corner3 == 0) {
-            kind = T;
-            rotation = 1;
-            pos = p0 + Point(0, 1);
-        }
-        else
-        if (corner0 == 0 &&
-            corner1 == 1 &&
-            corner2 == 0 &&
-            corner3 == 1) {
-            kind = T;
-            rotation = 3;
-            pos = p0 + Point(1, 1);
-        }
-    }
+    printf("kind: %d, rotation: %d\n", kind, rotation);
+    assert(!"should not reach here");
 }
 
 void setup_field(Tetris &tetris, const Grid &grid)
 {
-    std::array<Point,4> cells;
-    auto cell = cells.begin();
+    Piece piece;
+    auto cell = piece.cells.begin();
     const int HEIGHT = grid.size();
 
     for (int y = 0; y < HEIGHT; y++) {
@@ -225,11 +65,13 @@ void setup_field(Tetris &tetris, const Grid &grid)
             const int kind = grid[y][x];
             const Point pos = {x, HEIGHT - y - 1};
 
-            if (kind == X) {
-                assert(cell != cells.end());
+            if (kind == I) {
+                // Active piece symbol in grid
+                assert(cell != piece.cells.end());
                 *cell++ = pos;
             }
-            else if (kind == Y) {
+            else if (kind == O) {
+                // Static piece symbol in grid
                 tetris.SetFieldCellKind(pos, I);
             }
         }
@@ -239,7 +81,7 @@ void setup_field(Tetris &tetris, const Grid &grid)
     int rotation = 0;
     Point pos = {};
 
-    find_piece(cells, kind, rotation, pos);
+    find_piece_state(piece, kind, rotation, pos);
 
     tetris.SetTetrominoKind(kind);
     tetris.SetTetrominoRotation(rotation);
@@ -277,7 +119,7 @@ void test()
 {
     {
         const Grid grid = {
-            {0,0,0,0,X,X,X,X,0,0},
+            {0,0,0,0,I,I,I,I,0,0},
             {0,0,0,0,0,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
@@ -295,10 +137,10 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,0,0,X,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -315,8 +157,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,X,X,0,0},
-            {0,0,0,0,0,0,X,X,0,0},
+            {0,0,0,0,0,0,I,I,0,0},
+            {0,0,0,0,0,0,I,I,0,0},
         };
 
         Tetris tetris;
@@ -332,8 +174,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,X,X,0,0,0,0,0},
-            {0,0,0,0,X,X,0,0,0,0},
+            {0,0,0,I,I,0,0,0,0,0},
+            {0,0,0,0,I,I,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -350,9 +192,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,X,0,0,0,0,0,0},
-            {0,0,X,X,0,0,0,0,0,0},
-            {0,0,X,0,0,0,0,0,0,0},
+            {0,0,0,I,0,0,0,0,0,0},
+            {0,0,I,I,0,0,0,0,0,0},
+            {0,0,I,0,0,0,0,0,0,0},
         };
 
         Tetris tetris;
@@ -368,8 +210,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,X,X,0,0,0,0,0},
-            {0,0,X,X,0,0,0,0,0,0},
+            {0,0,0,I,I,0,0,0,0,0},
+            {0,0,I,I,0,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -386,9 +228,9 @@ void test()
     }
     {
         const Grid grid = {
-            {X,0,0,0,0,0,0,0,0,0},
-            {X,X,0,0,0,0,0,0,0,0},
-            {0,X,0,0,0,0,0,0,0,0},
+            {I,0,0,0,0,0,0,0,0,0},
+            {I,I,0,0,0,0,0,0,0,0},
+            {0,I,0,0,0,0,0,0,0,0},
         };
 
         Tetris tetris;
@@ -405,8 +247,8 @@ void test()
     {
         const Grid grid = {
             {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,X,X,X,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,I,I,I,0,0},
         };
 
         Tetris tetris;
@@ -422,9 +264,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,0,0,X,0,0},
-            {0,0,0,0,0,0,0,X,X,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,0,0,I,0,0},
+            {0,0,0,0,0,0,0,I,I,0},
         };
 
         Tetris tetris;
@@ -440,8 +282,8 @@ void test()
     }
     {
         const Grid grid = {
-            {X,X,X,0,0,0,0,0,0,0},
-            {X,0,0,0,0,0,0,0,0,0},
+            {I,I,I,0,0,0,0,0,0,0},
+            {I,0,0,0,0,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -458,9 +300,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,X,X,0,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,I,I,0,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
         };
 
         Tetris tetris;
@@ -476,8 +318,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,X,0,0,0,0,0,0,0},
-            {0,0,X,X,X,0,0,0,0,0},
+            {0,0,I,0,0,0,0,0,0,0},
+            {0,0,I,I,I,0,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -494,9 +336,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,X,X,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,0,I,I,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
         };
 
         Tetris tetris;
@@ -512,8 +354,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,X,X,X,0},
-            {0,0,0,0,0,0,0,0,X,0},
+            {0,0,0,0,0,0,I,I,I,0},
+            {0,0,0,0,0,0,0,0,I,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -530,9 +372,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,0,0,0,X},
-            {0,0,0,0,0,0,0,0,0,X},
-            {0,0,0,0,0,0,0,0,X,X},
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,0,0,0,0,I,I},
         };
 
         Tetris tetris;
@@ -548,8 +390,8 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,X,0,0,0},
-            {0,0,0,0,0,X,X,X,0,0},
+            {0,0,0,0,0,0,I,0,0,0},
+            {0,0,0,0,0,I,I,I,0,0},
             {0,0,0,0,0,0,0,0,0,0},
         };
 
@@ -566,9 +408,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,0,0,0,X,0},
-            {0,0,0,0,0,0,0,0,X,X},
-            {0,0,0,0,0,0,0,0,X,0},
+            {0,0,0,0,0,0,0,0,I,0},
+            {0,0,0,0,0,0,0,0,I,I},
+            {0,0,0,0,0,0,0,0,I,0},
         };
 
         Tetris tetris;
@@ -585,8 +427,8 @@ void test()
     {
         const Grid grid = {
             {0,0,0,0,0,0,0,0,0,0},
-            {0,X,X,X,0,0,0,0,0,0},
-            {0,0,X,0,0,0,0,0,0,0},
+            {0,I,I,I,0,0,0,0,0,0},
+            {0,0,I,0,0,0,0,0,0,0},
         };
 
         Tetris tetris;
@@ -602,9 +444,9 @@ void test()
     }
     {
         const Grid grid = {
-            {0,0,0,0,0,X,0,0,0,0},
-            {0,0,0,0,X,X,0,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
+            {0,0,0,0,I,I,0,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
         };
 
         Tetris tetris;
@@ -621,10 +463,10 @@ void test()
     // Single ===========================================
     {
         const Grid grid = {
-            {0,0,0,0,X,X,X,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
+            {0,0,0,0,I,I,I,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
             {0,0,0,0,0,0,0,0,0,0},
-            {Y,Y,Y,Y,Y,0,Y,Y,Y,Y},
+            {O,O,O,O,O,0,O,O,O,O},
         };
 
         Tetris tetris;
@@ -642,10 +484,10 @@ void test()
     // Double ===========================================
     {
         const Grid grid = {
-            {0,0,0,0,0,X,X,0,0,0},
-            {0,0,0,0,0,X,0,0,0,0},
-            {Y,Y,Y,Y,Y,X,Y,Y,Y,Y},
-            {Y,Y,Y,Y,Y,0,Y,Y,Y,Y},
+            {0,0,0,0,0,I,I,0,0,0},
+            {0,0,0,0,0,I,0,0,0,0},
+            {O,O,O,O,O,I,O,O,O,O},
+            {O,O,O,O,O,0,O,O,O,O},
         };
 
         Tetris tetris;

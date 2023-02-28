@@ -511,4 +511,51 @@ void test()
         ASSERT_EQ(2, tetris.GetClearedLineCount());
         ASSERT_EQ(300, tetris.GetClearPoints());
     }
+    // Triple ===========================================
+    {
+        const Grid grid = {
+            {0,0,I,I,0,0,0,0,0,0},
+            {0,0,0,I,0,0,0,0,0,0},
+            {0,0,0,I,0,0,0,O,O,0},
+            {O,O,0,0,O,O,O,O,O,O},
+            {O,O,O,0,O,O,O,O,O,O},
+            {O,O,O,0,O,O,O,O,O,O},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(3, tetris.GetClearedLineCount());
+        ASSERT_EQ(500, tetris.GetClearPoints());
+    }
+    // Tetris ===========================================
+    {
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,O,O,0,0,0,I},
+            {O,O,O,O,O,O,O,O,O,I},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(4, tetris.GetClearedLineCount());
+        ASSERT_EQ(800, tetris.GetClearPoints());
+    }
 }

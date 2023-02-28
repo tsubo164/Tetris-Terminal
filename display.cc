@@ -40,11 +40,11 @@ int Display::Open()
     while (tetris_.IsPlaying()) {
 
         // Input
-        const int state = input_key();
+        const int move = input_key();
 
         // Game logic
         if (clearing_timer_ == -1)
-            tetris_.UpdateFrame(state);
+            tetris_.UpdateFrame(move);
 
         // Rednering
         render();
@@ -472,32 +472,32 @@ void Display::draw_pause() const
 int Display::input_key()
 {
     const int key = getch();
-    int state = 0;
+    int move = 0;
 
     switch (key) {
     case 'z': case 'd':
-        state = ROT_LEFT; break;
+        move = ROT_LEFT; break;
 
     case 'x': case 'f':
-        state = ROT_RIGHT; break;
+        move = ROT_RIGHT; break;
 
     case KEY_LEFT: case 'h':
-        state = MOV_LEFT; break;
+        move = MOV_LEFT; break;
 
     case KEY_RIGHT: case 'l':
-        state = MOV_RIGHT; break;
+        move = MOV_RIGHT; break;
 
     case KEY_UP: case 'k':
-        state = MOV_UP; break;
+        move = MOV_UP; break;
 
     case KEY_DOWN: case 'j':
-        state = MOV_DOWN; break;
+        move = MOV_DOWN; break;
 
     case ' ': case 'm':
-        state = MOV_HARDDROP; break;
+        move = MOV_HARDDROP; break;
 
     case 'c':
-        state = HOLD_PIECE; break;
+        move = HOLD_PIECE; break;
 
     case '1':
         {
@@ -543,7 +543,7 @@ int Display::input_key()
         break;
     }
 
-    return state;
+    return move;
 }
 
 void Display::draw_str(int x, int y, const char *str) const

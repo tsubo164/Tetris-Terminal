@@ -131,7 +131,7 @@ bool Tetris::drop_piece(Tetromino &tet)
     return has_moved;
 }
 
-bool Tetris::move_piece(int action)
+bool Tetris::move_piece(int move)
 {
     Tetromino &current = tetromino_;
     Tetromino moved = tetromino_;
@@ -142,16 +142,16 @@ bool Tetris::move_piece(int action)
         gravity_drop_ -= gravity_;
 
     // Move
-    if (action & MOV_LEFT)
+    if (move & MOV_LEFT)
         moved.pos.x--;
 
-    if (action & MOV_RIGHT)
+    if (move & MOV_RIGHT)
         moved.pos.x++;
 
-    if ((action & MOV_UP) && IsDebugMode())
+    if ((move & MOV_UP) && IsDebugMode())
         moved.pos.y++;
 
-    if (action & MOV_DOWN)
+    if (move & MOV_DOWN)
         gravity_drop_ -= 60./60;
 
     while (gravity_drop_ <= -1) {
@@ -167,10 +167,10 @@ bool Tetris::move_piece(int action)
         has_moved = moved.CanFit(field_);
 
     // Rot
-    if (action & ROT_LEFT)
+    if (move & ROT_LEFT)
         moved.rotation = (current.rotation - 1 + 4) % 4;
 
-    if (action & ROT_RIGHT)
+    if (move & ROT_RIGHT)
         moved.rotation = (current.rotation + 1) % 4;
 
     if (moved.rotation != current.rotation) {
@@ -186,7 +186,7 @@ bool Tetris::move_piece(int action)
     return has_moved;
 }
 
-bool Tetris::has_landed()
+bool Tetris::has_landed() const
 {
     Tetromino moved = tetromino_;
     moved.pos.y--;
@@ -226,7 +226,7 @@ void Tetris::update_ghost()
         ghost_.kind = E;
 }
 
-void Tetris::UpdateFrame(int action)
+void Tetris::UpdateFrame(int move)
 {
     if (IsGameOver() || IsPaused())
         return;
@@ -253,12 +253,12 @@ void Tetris::UpdateFrame(int action)
         }
     }
 
-    // Actions
-    if (action & HOLD_PIECE) {
+    // Moves
+    if (move & HOLD_PIECE) {
         hold_piece();
         return;
     }
-    else if (action & MOV_HARDDROP) {
+    else if (move & MOV_HARDDROP) {
         const int old_y = tetromino_.pos.y;
         drop_piece(tetromino_);
         lock_delay_timer_ = 0;
@@ -266,15 +266,15 @@ void Tetris::UpdateFrame(int action)
         scorer_.AddHardDrop(old_y - tetromino_.pos.y);
     }
     else {
-        const bool moved = move_piece(action);
+        const bool moved = move_piece(move);
         if (moved)
             reset_lock_delay_timer();
 
-        if (moved && (action & MOV_DOWN))
+        if (moved && (move & MOV_DOWN))
             scorer_.AddSoftDrop();
     }
-    if (action)
-        last_action_ = action;
+    if (move)
+        last_move_ = move;
 
     const bool landed = has_landed();
     if (landed) {
@@ -307,7 +307,7 @@ int Tetris::detect_tspin() const
     if (tetromino_.kind != T)
         return TSPIN_NONE;
 
-    if (!(last_action_ & (ROT_LEFT | ROT_RIGHT)))
+    if (!(last_move_ & (ROT_LEFT | ROT_RIGHT)))
         return TSPIN_NONE;
 
     if (GetClearedLineCount() == 4)

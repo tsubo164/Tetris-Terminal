@@ -8,7 +8,7 @@
 #include "field.h"
 #include <deque>
 
-enum TetrominoAction {
+enum TetrominoMove {
     MOV_RIGHT     = 1 << 0,
     MOV_LEFT      = 1 << 1,
     MOV_UP        = 1 << 2,
@@ -40,7 +40,7 @@ public:
     bool IsHoldEnable() const;
 
     // Tick Game
-    void UpdateFrame(int action);
+    void UpdateFrame(int move);
 
     // Field
     int GetFieldCellKind(Point pos) const;
@@ -109,13 +109,13 @@ private:
 
     float gravity_drop_ = 0;
     float gravity_ = 1./60;
-    int last_action_ = 0;
+    int last_move_ = 0;
     Point last_kick_ = {};
     int tspin_kind_ = 0;
 
     bool drop_piece(Tetromino &tet);
-    bool move_piece(int action);
-    bool has_landed();
+    bool move_piece(int move);
+    bool has_landed() const;
     void hold_piece();
     void update_ghost();
     int detect_tspin() const;

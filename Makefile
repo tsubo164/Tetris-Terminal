@@ -20,22 +20,12 @@ $(OBJS): %.o: %.cc
 $(TETRIS): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-# TESTS ======================
-TEST_OBJS = $(filter-out main.o, $(OBJS)) test.o
-
-test_main: $(TEST_OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-test: test_main
-	./test_main
-	@echo "\033[0;32mOK\033[0;39m"
-
-test.o: test.cc
-	$(CC) $(CFLAGS) -o $@ $<
-#TESTS ======================
+test: $(TETRIS)
+	$(MAKE) -C tests $@
 
 clean:
-	$(RM) $(TETRIS) test_main *.o *.d
+	$(RM) $(TETRIS) *.o *.d
+	$(MAKE) -C tests $@
 
 $(DEPS): %.d: %.cc
 	$(CC) -c -MM $< > $@

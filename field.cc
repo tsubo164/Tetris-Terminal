@@ -1,4 +1,5 @@
 #include "field.h"
+#include "log.h"
 
 #include <algorithm>
 #include <cassert>
@@ -56,8 +57,9 @@ void Field::SetCellKind(Point pos, int kind)
 {
     const int x = pos.x, y = pos.y;
 
-    assert(IsEmptyCell(lines_[y][x]));
-    assert(is_inside_field(pos));
+    AddLog("SetCellKind(): kind: %d, x: %d, y: %d", kind, pos.x, pos.y);
+    TET_ASSERT(IsEmptyCell(lines_[y][x]));
+    TET_ASSERT(is_inside_field(pos));
 
     lines_[y].SetCell(x, kind);
 

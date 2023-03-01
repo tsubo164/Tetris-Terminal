@@ -127,6 +127,8 @@ private:
 
     bool spawn_tetromino();
     void generate_bag();
+
+    void add_log(int move);
 };
 
 #endif

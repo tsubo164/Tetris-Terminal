@@ -1,4 +1,5 @@
 #include "tetris.h"
+#include "log.h"
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -230,6 +231,8 @@ void Tetris::UpdateFrame(int move)
 {
     if (IsGameOver() || IsPaused())
         return;
+
+    add_log(move);
 
     // Clears lines
     if (GetClearedLineCount() > 0 || GetTspinKind() > 0) {
@@ -595,4 +598,41 @@ bool Tetris::IsGhostEnable() const
 bool Tetris::IsHoldEnable() const
 {
     return is_hold_enable_;
+}
+
+void Tetris::add_log(int move)
+{
+    AddLog("\n=========================================================");
+    AddLog("frame: %ld, move: %d, kind: %d, rotation: %d, pos: (%d, %d)",
+            frame_, move, tetromino_.kind, tetromino_.rotation,
+            tetromino_.pos.x, tetromino_.pos.y);
+
+    AddLog("lock_delay_timer_: %d, reset_counter_: %d, need_spawn_: %d",
+            lock_delay_timer_, reset_counter_, need_spawn_);
+
+    AddLog("gravity_drop_: %g, gravity_: %g, last_move_: %d, "
+            "last_kick_: (%d, %d), tspin_kind_: %d",
+            gravity_drop_, gravity_, last_move_,
+            last_kick_.x, last_kick_.y, tspin_kind_);
+
+    for (int y = 0; y < FIELD_HEIGHT; y++) {
+        char line[11] = {'\0'};
+        for (int x = 0; x < FIELD_WIDTH; x++) {
+            const int kind = GetFieldCellKind(Point(x, FIELD_HEIGHT - y - 1));
+            char ch;
+            switch (kind) {
+            case E: ch = '.'; break;
+            case I: ch = 'I'; break;
+            case O: ch = 'O'; break;
+            case S: ch = 'S'; break;
+            case Z: ch = 'Z'; break;
+            case J: ch = 'J'; break;
+            case L: ch = 'L'; break;
+            case T: ch = 'T'; break;
+            default: ch = '?'; break;
+            }
+            line[x] = ch;
+        }
+        AddLog(line);
+    }
 }

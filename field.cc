@@ -35,11 +35,9 @@ void Field::Clear()
 
 bool Field::IsEmpty() const
 {
-    for (const auto &line: lines_)
-        if (line.cell_count > 0 && !line.is_cleared)
-            return false;
-
-    return true;
+    return std::find_if(lines_.begin(), lines_.end(),
+            [](const auto &line){ return line.cell_count > 0 && !line.is_cleared; })
+        == lines_.end();
 }
 
 int Field::GetCellKind(Point pos) const

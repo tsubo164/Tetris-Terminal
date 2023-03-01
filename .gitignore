@@ -1,5 +1,6 @@
 tetris
 log.txt
+tests/test_main
 *.d
 *.o
 *.swp

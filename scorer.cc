@@ -23,6 +23,8 @@ void Scorer::Reset()
 
 void Scorer::Start()
 {
+    last_clear_count_ = clear_count_;
+
     clear_count_ = 0;
     clear_points_ = 0;
     combo_points_ = 0;
@@ -54,7 +56,7 @@ int Scorer::get_combo_count() const
     return combo_counts[count];
 }
 
-void Scorer::AddLineClear(int count, int tspin_kind, bool perfect_cleared)
+void Scorer::AddLineClear(int count, int tspin_kind, bool perfect_clear)
 {
     assert(count >= 0 && count <= 4);
     assert(tspin_kind >= TSPIN_NONE && tspin_kind <= TSPIN_MINI);
@@ -72,7 +74,7 @@ void Scorer::AddLineClear(int count, int tspin_kind, bool perfect_cleared)
     clear_points_ = point_table[tspin_kind][clear_count_] * level_;
 
     // Perfect clear
-    if (perfect_cleared) {
+    if (perfect_clear) {
         static const int perfect_point_table[5] = {
               0,  800,  1200, 1800, 2000
         };
@@ -102,6 +104,10 @@ void Scorer::AddLineClear(int count, int tspin_kind, bool perfect_cleared)
         clear_points_ *= 1.5;
         combo_points_ *= 1.5;
     }
+
+    // Back to Back Tetris perfect clear
+    if (perfect_clear && last_clear_count_ == 4 && clear_count_ == 4)
+        clear_points_ = 3200;
 }
 
 void Scorer::AddSoftDrop()

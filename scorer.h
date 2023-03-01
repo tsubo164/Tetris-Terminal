@@ -18,7 +18,7 @@ public:
     void Start();
     void Commit();
 
-    void AddLineClear(int count, int tspin_kind, bool perfect_cleared);
+    void AddLineClear(int count, int tspin_kind, bool perfect_clear);
     void AddSoftDrop();
     void AddHardDrop(int distance);
 
@@ -37,6 +37,7 @@ private:
 
     // For each locking
     int clear_count_ = 0;
+    int last_clear_count_ = 0;
     int clear_points_ = 0;
     int combo_counter_ = -1;
     int combo_points_ = 0;

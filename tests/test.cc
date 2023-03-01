@@ -558,4 +558,63 @@ void test()
         ASSERT_EQ(4, tetris.GetClearedLineCount());
         ASSERT_EQ(800, tetris.GetClearPoints());
     }
+    // Perfect clear ===========================================
+    {
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,I,I},
+            {0,0,0,0,0,0,0,0,I,I},
+            {O,O,O,O,O,O,O,O,0,0},
+            {O,O,O,O,O,O,O,O,0,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(1, tetris.IsPerfectClear());
+        ASSERT_EQ(2, tetris.GetClearedLineCount());
+        ASSERT_EQ(1200, tetris.GetClearPoints());
+    }
+    {
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,0,0,0,0,0,I},
+            {0,0,0,0,0,0,0,0,0,I},
+            {O,O,O,O,O,O,O,O,O,I},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+        };
+
+        Tetris tetris;
+        tetris.SetDebugMode();
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(4, tetris.GetClearedLineCount());
+        ASSERT_EQ(800, tetris.GetClearPoints());
+        tetris.UpdateFrame(0);
+
+        tetris.SetTetrominoKind(1);
+        tetris.SetTetrominoRotation(1);
+        tetris.SetTetrominoPos(Point(9, 10));
+        tetris.UpdateFrame(MOV_HARDDROP);
+
+        ASSERT_EQ(1, tetris.IsPerfectClear());
+        ASSERT_EQ(4, tetris.GetClearedLineCount());
+        ASSERT_EQ(3200, tetris.GetClearPoints());
+    }
 }

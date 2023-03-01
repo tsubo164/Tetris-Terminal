@@ -96,7 +96,7 @@ private:
     bool debug_mode_ = false;
     int playing_fps_ = 60;
 
-    int preview_count_ = 1;
+    int preview_count_ = 3;
     bool is_hold_available_ = false;
     bool is_hold_enable_ = true;
     bool is_ghost_enable_ = true;

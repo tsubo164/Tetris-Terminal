@@ -1,6 +1,6 @@
 #include "piece.h"
 
-static char piece_data[9][4][4] =
+static const char piece_data[9][4][4] =
 {
     { // E
         {0, 0, 0, 0},

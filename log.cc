@@ -5,7 +5,7 @@
 #include <string>
 #include <deque>
 
-std::deque<std::string> logs;
+static std::deque<std::string> logs;
 
 void AddLog(const char *str, ...)
 {
@@ -31,9 +31,8 @@ void SaveLog()
         return;
     }
 
-    for (auto log: logs) {
+    for (auto log: logs)
         ofs << log << std::endl;
-    }
 }
 
 void Assert(int expr, const char *str, const char *file, int line)

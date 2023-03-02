@@ -1,6 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+void EnableLog(bool enable);
 void AddLog(const char *str, ...);
 void SaveLog();
 

@@ -1,5 +1,5 @@
 tetris
-log.txt
+log_tetris_*.txt
 tests/test_main
 *.d
 *.o

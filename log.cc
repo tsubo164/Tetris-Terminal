@@ -3,12 +3,24 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <random>
 #include <deque>
 
+static const int MAX_LOG_COUNT = 1024;
 static std::deque<std::string> logs;
+static bool is_log_enabled = true;
+
+void EnableLog(bool enable)
+{
+    is_log_enabled = enable;
+}
 
 void AddLog(const char *str, ...)
 {
+    if (!is_log_enabled)
+        return;
+
+    // Format
     static char buf[1024] = {'\0'};
     va_list va;
 
@@ -16,18 +28,28 @@ void AddLog(const char *str, ...)
     vsprintf(buf, str, va);
     va_end(va);
 
+    // Push
     logs.push_back(buf);
 
-    if (logs.size() > 1024)
+    if (logs.size() > MAX_LOG_COUNT)
         logs.pop_front();
 }
 
 void SaveLog()
 {
-    std::ofstream ofs("log.txt");
+    if (!is_log_enabled)
+        return;
+
+    // Random file name
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    const std::string filename = "log_tetris_" + std::to_string(rng()) + ".txt";
+
+    // Save
+    std::ofstream ofs(filename);
 
     if (!ofs) {
-        std::cerr << "can't open log.txt" << std::endl;
+        std::cerr << "can't open file: " << filename << std::endl;
         return;
     }
 

@@ -550,6 +550,11 @@ float Tetris::GetGravity() const
     return gravity_;
 }
 
+void Tetris::EnableLog(bool enable)
+{
+    ::EnableLog(enable);
+}
+
 void Tetris::QuitGame()
 {
     is_playing_ = false;

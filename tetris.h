@@ -80,6 +80,7 @@ public:
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
     float GetGravity() const;
+    void EnableLog(bool enable);
 
 private:
     Tetromino tetromino_;

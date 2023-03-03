@@ -113,7 +113,18 @@ void AssertEq(Point expected, Point actual, int line)
     }
 }
 
+void AssertNe(Point expected, Point actual, int line)
+{
+    if (expected == actual) {
+        printf("\033[0;31mNG\033[0;39m\n");
+        printf("error:%d: expected: (%d, %d) actual: (%d, %d)\n",
+                line, expected.x, expected.y, actual.x, actual.y);
+        exit(1);
+    }
+}
+
 #define ASSERT_EQ(expected,actual) AssertEq((expected),(actual),__LINE__)
+#define ASSERT_NE(expected,actual) AssertNe((expected),(actual),__LINE__)
 
 void test()
 {
@@ -616,5 +627,49 @@ void test()
         ASSERT_EQ(1, tetris.IsPerfectClear());
         ASSERT_EQ(4, tetris.GetClearedLineCount());
         ASSERT_EQ(3200, tetris.GetClearPoints());
+    }
+    {
+        // Fixing failure to set piece
+        // crash log: tests/log_tetris_1084797668.txt
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {O,O,O,0,0,0,0,0,0,0},
+            {O,O,O,O,O,0,0,0,I,I},
+            {O,O,O,O,O,O,O,O,0,I},
+            {O,O,O,O,O,O,0,O,O,I},
+            {O,O,O,O,O,O,O,O,0,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+            {O,O,O,O,O,O,O,O,O,0},
+        };
+
+        Tetris tetris;
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+        ASSERT_EQ(6, tetris.GetTetrominoKind());
+        ASSERT_EQ(3, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(9, 6), tetris.GetTetrominoPos());
+
+        tetris.SetGravityDrop(-0.8186);
+        tetris.SetGravity(0.2598);
+        tetris.UpdateFrame(ROT_RIGHT);
+
+        ASSERT_EQ(0, tetris.GetTetrominoRotation());
+        ASSERT_NE(Point(9, 5), tetris.GetTetrominoPos());
+
+        update_frame_ntimes(tetris, 0, 30);
     }
 }

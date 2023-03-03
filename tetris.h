@@ -79,7 +79,11 @@ public:
     void SetFieldCellKind(Point pos, int kind);
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
+
     float GetGravity() const;
+    void SetGravity(float gravity);
+    void SetGravityDrop(float gravity_drop);
+
     void EnableLog(bool enable);
 
 private:

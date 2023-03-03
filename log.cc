@@ -62,8 +62,8 @@ void Assert(int expr, const char *str, const char *file, int line)
     if (expr)
         return;
 
-    fprintf(stderr, "Assertion failed: '%s'", str);
-    fprintf(stderr, "File: %s, Line: %d", file, line);
+    fprintf(stderr, "Assertion failed: '%s'\n", str);
+    fprintf(stderr, "File: %s, Line: %d\n", file, line);
 
     AddLog("Assertion failed: '%s'", str);
     AddLog("File: %s, Line: %d", file, line);

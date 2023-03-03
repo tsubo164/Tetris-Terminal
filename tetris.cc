@@ -137,6 +137,7 @@ bool Tetris::move_piece(int move)
     Tetromino &current = tetromino_;
     Tetromino moved = tetromino_;
     bool has_moved = false;
+    bool has_rotated = false;
 
     // Gravity drop
     if (!IsDebugMode())
@@ -155,6 +156,7 @@ bool Tetris::move_piece(int move)
     if (move & MOV_DOWN)
         gravity_drop_ -= 60./60;
 
+    // TODO gravity move has to be done first
     while (gravity_drop_ <= -1) {
         moved.pos.y--;
         gravity_drop_ += 1;
@@ -167,6 +169,10 @@ bool Tetris::move_piece(int move)
     if (moved.pos != current.pos)
         has_moved = moved.CanFit(field_);
 
+    // Commit translate and/or gravity drop
+    if (has_moved)
+        current = moved;
+
     // Rot
     if (move & ROT_LEFT)
         moved.rotation = (current.rotation - 1 + 4) % 4;
@@ -176,15 +182,15 @@ bool Tetris::move_piece(int move)
 
     if (moved.rotation != current.rotation) {
         const Point old_pos = moved.pos;
-        has_moved = has_moved || moved.KickWall(field_, current.rotation);
+        has_rotated = moved.KickWall(field_, current.rotation);
         last_kick_ = old_pos - moved.pos;
     }
 
-    // Commit move
-    if (has_moved)
+    // Commit rotation and kick
+    if (has_rotated)
         current = moved;
 
-    return has_moved;
+    return has_moved || has_rotated;
 }
 
 bool Tetris::has_landed() const
@@ -484,9 +490,6 @@ bool Tetris::IsDebugMode() const
 
 void Tetris::SetTetrominoKind(int kind)
 {
-    if (!IsDebugMode())
-        return;
-
     if (!IsSolidCell(kind))
         return;
 
@@ -550,6 +553,15 @@ float Tetris::GetGravity() const
     return gravity_;
 }
 
+void Tetris::SetGravity(float gravity)
+{
+    gravity_ = gravity;
+}
+
+void Tetris::SetGravityDrop(float gravity_drop)
+{
+    gravity_drop_ = gravity_drop;
+}
 void Tetris::EnableLog(bool enable)
 {
     ::EnableLog(enable);

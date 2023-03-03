@@ -67,7 +67,7 @@ void Field::SetCellKind(Point pos, int kind)
 
 void Field::SetPiece(const Piece &piece)
 {
-    for (auto pos: piece.cells) {
+    for (auto pos: piece.tiles) {
         if (is_inside_hole(pos))
             continue;
 

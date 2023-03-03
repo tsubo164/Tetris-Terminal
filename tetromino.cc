@@ -19,7 +19,7 @@ bool Tetromino::CanFit(const Field &field) const
 {
     const Piece piece = GetPiece(kind, rotation);
 
-    for (auto cell: piece.cells) {
+    for (auto cell: piece.tiles) {
         const Point world = pos + cell;
         const int kind = field.GetCellKind(world);
 

@@ -4,7 +4,7 @@
 #include "point.h"
 #include <array>
 
-enum CellKind {
+enum TileKind {
     B = -1, // border
     E = 0, // empty
     I, O, S, Z, J, L, T,
@@ -12,7 +12,7 @@ enum CellKind {
 };
 
 struct Piece {
-    std::array<Point, 4> cells;
+    std::array<Point, 4> tiles;
     int kind = E;
 };
 

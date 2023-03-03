@@ -353,7 +353,7 @@ int Tetris::detect_tspin() const
     int back_occluded = 0;
 
     for (int i = 0; i < 4; i++) {
-        const Point world = tetromino_.pos + tcorners.cells[i];
+        const Point world = tetromino_.pos + tcorners.tiles[i];
         const int kind = GetFieldCellKind(world);
 
         if (!IsEmptyCell(kind)) {
@@ -412,7 +412,7 @@ Piece Tetris::GetCurrentPiece() const
 {
     Piece piece = GetPiece(tetromino_.kind, tetromino_.rotation);
 
-    for (auto &pos: piece.cells)
+    for (auto &pos: piece.tiles)
         pos += tetromino_.pos;
 
     return piece;
@@ -422,7 +422,7 @@ Piece Tetris::GetGhostPiece() const
 {
     Piece piece = GetPiece(ghost_.kind, ghost_.rotation);
 
-    for (auto &pos: piece.cells)
+    for (auto &pos: piece.tiles)
         pos += ghost_.pos;
 
     return piece;
@@ -432,7 +432,7 @@ Piece Tetris::GetHoldPiece() const
 {
     Piece piece = GetPiece(hold_.kind, hold_.rotation);
 
-    for (auto &pos: piece.cells)
+    for (auto &pos: piece.tiles)
         pos += hold_.pos;
 
     return piece;

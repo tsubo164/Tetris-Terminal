@@ -15,7 +15,7 @@ using Grid = std::vector<std::array<int,10>>;
 static Point bbox_min(const Piece &piece)
 {
     Point min = {9999, 9999};
-    for (auto pos: piece.cells) {
+    for (auto pos: piece.tiles) {
         min.x = std::min(min.x, pos.x);
         min.y = std::min(min.y, pos.y);
     }
@@ -32,10 +32,10 @@ void find_piece_state(const Piece &piece, int &kind, int &rotation, Point &pos)
             const Point pattern_min = bbox_min(pattern);
             bool match = true;
 
-            for (auto piece_pos: piece.cells) {
+            for (auto piece_pos: piece.tiles) {
                 match &= std::any_of(
-                        pattern.cells.begin(),
-                        pattern.cells.end(),
+                        pattern.tiles.begin(),
+                        pattern.tiles.end(),
                         [=](Point pattern_pos){
                             return piece_pos - piece_min == pattern_pos - pattern_min;
                         });
@@ -57,7 +57,7 @@ void find_piece_state(const Piece &piece, int &kind, int &rotation, Point &pos)
 void setup_field(Tetris &tetris, const Grid &grid)
 {
     Piece piece;
-    auto cell = piece.cells.begin();
+    auto cell = piece.tiles.begin();
     const int HEIGHT = grid.size();
 
     for (int y = 0; y < HEIGHT; y++) {
@@ -67,7 +67,7 @@ void setup_field(Tetris &tetris, const Grid &grid)
 
             if (kind == I) {
                 // Active piece symbol in grid
-                assert(cell != piece.cells.end());
+                assert(cell != piece.tiles.end());
                 *cell++ = pos;
             }
             else if (kind == O) {

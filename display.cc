@@ -211,7 +211,7 @@ void Display::draw_ghost() const
     if (IsEmptyCell(piece.kind))
         return;
 
-    for (auto pos: piece.cells) {
+    for (auto pos: piece.tiles) {
         draw_cell(pos.x, pos.y, piece.kind, IS_HOLLOW);
     }
 }
@@ -229,7 +229,7 @@ void Display::draw_tetromino() const
     if (IsEmptyCell(piece.kind))
         return;
 
-    for (auto pos: piece.cells) {
+    for (auto pos: piece.tiles) {
         draw_cell(pos.x, pos.y, piece.kind);
     }
 }
@@ -317,7 +317,7 @@ void Display::draw_info() const
                 if (next.kind == E)
                     continue;
 
-                for (const auto &pos: next.cells) {
+                for (const auto &pos: next.tiles) {
                     draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
                 }
             }
@@ -332,7 +332,7 @@ void Display::draw_info() const
 
             if (!IsEmptyCell(hold.kind) && tetris_.IsHoldEnable()) {
                 const bool is_hollow = !tetris_.IsHoldAvailable();
-                for (const auto &pos: hold.cells) {
+                for (const auto &pos: hold.tiles) {
                     draw_cell(x + pos.x + 1, y + pos.y - 2, hold.kind, is_hollow);
                 }
             }

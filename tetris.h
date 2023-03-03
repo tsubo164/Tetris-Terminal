@@ -118,9 +118,12 @@ private:
     Point last_kick_ = {};
     int tspin_kind_ = 0;
 
-    bool drop_piece(Tetromino &tet);
+    bool hard_drop(Tetromino &tet);
+    bool drop_piece(int move);
+    bool shift_piece(int move);
+    bool rotate_piece(int move);
     bool move_piece(int move);
-    bool has_landed() const;
+    bool has_piece_landed() const;
     void hold_piece();
     void update_ghost();
     int detect_tspin() const;

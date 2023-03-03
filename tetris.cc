@@ -115,7 +115,7 @@ void Tetris::generate_bag()
         bag_.push_back(kind);
 }
 
-bool Tetris::drop_piece(Tetromino &tet)
+bool Tetris::hard_drop(Tetromino &tet)
 {
     Tetromino &current = tet;
     Tetromino moved = tet;
@@ -132,23 +132,14 @@ bool Tetris::drop_piece(Tetromino &tet)
     return has_moved;
 }
 
-bool Tetris::move_piece(int move)
+bool Tetris::drop_piece(int move)
 {
     Tetromino &current = tetromino_;
     Tetromino moved = tetromino_;
-    bool has_moved = false;
-    bool has_rotated = false;
 
     // Gravity drop
     if (!IsDebugMode())
         gravity_drop_ -= gravity_;
-
-    // Move
-    if (move & MOV_LEFT)
-        moved.pos.x--;
-
-    if (move & MOV_RIGHT)
-        moved.pos.x++;
 
     if ((move & MOV_UP) && IsDebugMode())
         moved.pos.y++;
@@ -156,7 +147,6 @@ bool Tetris::move_piece(int move)
     if (move & MOV_DOWN)
         gravity_drop_ -= 60./60;
 
-    // TODO gravity move has to be done first
     while (gravity_drop_ <= -1) {
         moved.pos.y--;
         gravity_drop_ += 1;
@@ -166,34 +156,69 @@ bool Tetris::move_piece(int move)
         }
     }
 
-    if (moved.pos != current.pos)
-        has_moved = moved.CanFit(field_);
+    if (moved.pos.y == current.pos.y)
+        return false;
 
-    // Commit translate and/or gravity drop
-    if (has_moved)
+    const bool can_move = moved.CanFit(field_);
+    if (can_move)
         current = moved;
+
+    return can_move;
+}
+
+bool Tetris::shift_piece(int move)
+{
+    Tetromino &current = tetromino_;
+    Tetromino moved = tetromino_;
+
+    // Move
+    if (move & MOV_LEFT)
+        moved.pos.x--;
+    else if (move & MOV_RIGHT)
+        moved.pos.x++;
+    else
+        return false;
+
+    const bool can_move = moved.CanFit(field_);
+    if (can_move)
+        current = moved;
+
+    return can_move;
+}
+
+bool Tetris::rotate_piece(int move)
+{
+    Tetromino &current = tetromino_;
+    Tetromino moved = tetromino_;
 
     // Rot
     if (move & ROT_LEFT)
         moved.rotation = (current.rotation - 1 + 4) % 4;
-
-    if (move & ROT_RIGHT)
+    else if (move & ROT_RIGHT)
         moved.rotation = (current.rotation + 1) % 4;
+    else
+        return false;
 
-    if (moved.rotation != current.rotation) {
-        const Point old_pos = moved.pos;
-        has_rotated = moved.KickWall(field_, current.rotation);
-        last_kick_ = old_pos - moved.pos;
-    }
+    const Point old_pos = moved.pos;
+    const bool can_move = moved.KickWall(field_, current.rotation);
+    last_kick_ = old_pos - moved.pos;
 
-    // Commit rotation and kick
-    if (has_rotated)
+    if (can_move)
         current = moved;
 
-    return has_moved || has_rotated;
+    return can_move;
 }
 
-bool Tetris::has_landed() const
+bool Tetris::move_piece(int move)
+{
+    const bool has_dropped = drop_piece(move);
+    const bool has_shifted = shift_piece(move);
+    const bool has_rotated = rotate_piece(move);
+
+    return has_dropped || has_shifted || has_rotated;
+}
+
+bool Tetris::has_piece_landed() const
 {
     Tetromino moved = tetromino_;
     moved.pos.y--;
@@ -228,7 +253,7 @@ void Tetris::update_ghost()
     }
 
     ghost_ = tetromino_;
-    drop_piece(ghost_);
+    hard_drop(ghost_);
     if (ghost_.pos == tetromino_.pos)
         ghost_.kind = E;
 }
@@ -269,24 +294,24 @@ void Tetris::UpdateFrame(int move)
     }
     else if (move & MOV_HARDDROP) {
         const int old_y = tetromino_.pos.y;
-        drop_piece(tetromino_);
+        hard_drop(tetromino_);
         lock_delay_timer_ = 0;
 
         scorer_.AddHardDrop(old_y - tetromino_.pos.y);
     }
     else {
-        const bool moved = move_piece(move);
-        if (moved)
+        const bool has_moved = move_piece(move);
+        if (has_moved)
             reset_lock_delay_timer();
 
-        if (moved && (move & MOV_DOWN))
+        if (has_moved && (move & MOV_DOWN))
             scorer_.AddSoftDrop();
     }
     if (move)
         last_move_ = move;
 
-    const bool landed = has_landed();
-    if (landed) {
+    const bool has_landed = has_piece_landed();
+    if (has_landed) {
         gravity_drop_ = 0.;
         start_lock_delay_timer();
     }
@@ -295,7 +320,7 @@ void Tetris::UpdateFrame(int move)
     update_ghost();
 
     // Locking
-    if (lock_delay_timer_ == 0 && landed) {
+    if (lock_delay_timer_ == 0 && has_landed) {
         field_.SetPiece(GetCurrentPiece());
 
         // T-Spin and line clear

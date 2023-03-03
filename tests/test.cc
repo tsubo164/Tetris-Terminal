@@ -672,4 +672,31 @@ void test()
 
         update_frame_ntimes(tetris, 0, 30);
     }
+    {
+        const Grid grid = {
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,I,I,0,0,0,0},
+            {0,0,0,0,I,0,0,0,0,0},
+            {O,O,O,O,I,O,O,O,O,O},
+            {O,O,O,O,0,O,O,O,O,O},
+            {O,O,O,O,0,O,O,O,O,O},
+        };
+
+        Tetris tetris;
+        tetris.PlayGame();
+        tetris.UpdateFrame(0);
+
+        setup_field(tetris, grid);
+        ASSERT_EQ(5, tetris.GetTetrominoKind());
+        ASSERT_EQ(1, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(4, 3), tetris.GetTetrominoPos());
+
+        tetris.SetGravityDrop(-0.8186);
+        tetris.SetGravity(0.2598);
+        tetris.UpdateFrame(MOV_RIGHT);
+
+        ASSERT_EQ(5, tetris.GetTetrominoKind());
+        ASSERT_EQ(1, tetris.GetTetrominoRotation());
+        ASSERT_EQ(Point(4, 2), tetris.GetTetrominoPos());
+    }
 }

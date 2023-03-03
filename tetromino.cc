@@ -21,9 +21,9 @@ bool Tetromino::CanFit(const Field &field) const
 
     for (auto tile: piece.tiles) {
         const Point world = pos + tile;
-        const int kind = field.GetCellKind(world);
+        const int kind = field.GetTileKind(world);
 
-        if (!IsEmptyCell(kind))
+        if (!IsEmptyTile(kind))
             return false;
     }
 

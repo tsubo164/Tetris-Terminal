@@ -16,10 +16,10 @@ struct Piece {
     int kind = E;
 };
 
-// Cell kind
-bool IsEmptyCell(int kind);
-bool IsSolidCell(int kind);
-bool IsValidCell(int kind);
+// Tile kind
+bool IsEmptyTile(int kind);
+bool IsSolidTile(int kind);
+bool IsValidTile(int kind);
 
 // Piece
 void InitializePieces();

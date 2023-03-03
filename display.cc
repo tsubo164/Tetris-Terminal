@@ -180,13 +180,13 @@ void Display::draw_borders() const
         {
             // Bottom border
             const int y = -1;
-            const int kind = tetris_.GetFieldCellKind(Point(x, y));
+            const int kind = tetris_.GetFieldTileKind(Point(x, y));
             draw_tile(x, y, kind);
         }
         {
             // Top border
             const int y = FIELD_HEIGHT;
-            const int kind = tetris_.GetFieldCellKind(Point(x, y));
+            const int kind = tetris_.GetFieldTileKind(Point(x, y));
             draw_tile(x, y, kind);
         }
     }
@@ -197,7 +197,7 @@ void Display::draw_field() const
     // Stack
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            const int kind = tetris_.GetFieldCellKind(Point(x, y));
+            const int kind = tetris_.GetFieldTileKind(Point(x, y));
             draw_tile(x, y, kind);
         }
     }
@@ -208,7 +208,7 @@ void Display::draw_ghost() const
     const bool IS_HOLLOW = true;
     const Piece piece = tetris_.GetGhostPiece();
 
-    if (IsEmptyCell(piece.kind))
+    if (IsEmptyTile(piece.kind))
         return;
 
     for (auto pos: piece.tiles) {
@@ -226,7 +226,7 @@ void Display::draw_tetromino() const
 
     const Piece piece = tetris_.GetCurrentPiece();
 
-    if (IsEmptyCell(piece.kind))
+    if (IsEmptyTile(piece.kind))
         return;
 
     for (auto pos: piece.tiles) {
@@ -266,8 +266,8 @@ void Display::draw_effect()
     if (is_flashing) {
         for (int y = 0; y < FIELD_HEIGHT; y++) {
             for (int x = 0; x < FIELD_WIDTH; x++) {
-                const int kind = tetris_.GetFieldCellKind(Point(x, y));
-                if (IsEmptyCell(kind))
+                const int kind = tetris_.GetFieldTileKind(Point(x, y));
+                if (IsEmptyTile(kind))
                     draw_blank(x, y, is_flashing);
             }
         }
@@ -330,7 +330,7 @@ void Display::draw_info() const
         if (!tetris_.IsPaused()) {
             const Piece hold = tetris_.GetHoldPiece();
 
-            if (!IsEmptyCell(hold.kind) && tetris_.IsHoldEnable()) {
+            if (!IsEmptyTile(hold.kind) && tetris_.IsHoldEnable()) {
                 const bool is_hollow = !tetris_.IsHoldAvailable();
                 for (const auto &pos: hold.tiles) {
                     draw_tile(x + pos.x + 1, y + pos.y - 2, hold.kind, is_hollow);
@@ -556,10 +556,10 @@ void Display::draw_str(int x, int y, const char *str) const
 
 void Display::draw_tile(int x, int y, int kind, bool is_hollow) const
 {
-    if (IsEmptyCell(kind) && !tetris_.IsDebugMode())
+    if (IsEmptyTile(kind) && !tetris_.IsDebugMode())
         return;
 
-    if (IsSolidCell(kind))
+    if (IsSolidTile(kind))
         attrset(COLOR_PAIR(kind));
     else
         attrset(COLOR_PAIR(DEFAULT_COLOR_PAIR));

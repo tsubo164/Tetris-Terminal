@@ -231,7 +231,7 @@ void Tetris::hold_piece()
     if (!IsHoldEnable())
         return;
 
-    if (IsEmptyCell(hold_.kind)) {
+    if (IsEmptyTile(hold_.kind)) {
         hold_ = Tetromino(tetromino_.kind, Point());
         need_spawn_ = true;
     }
@@ -354,9 +354,9 @@ int Tetris::detect_tspin() const
 
     for (int i = 0; i < 4; i++) {
         const Point world = tetromino_.pos + tcorners.tiles[i];
-        const int kind = GetFieldCellKind(world);
+        const int kind = GetFieldTileKind(world);
 
-        if (!IsEmptyCell(kind)) {
+        if (!IsEmptyTile(kind)) {
             if (i == 0 || i == 1)
                 front_occluded++;
             if (i == 2 || i == 3)
@@ -380,9 +380,9 @@ int Tetris::detect_tspin() const
     return tspin_kind;
 }
 
-int Tetris::GetFieldCellKind(Point pos) const
+int Tetris::GetFieldTileKind(Point pos) const
 {
-    return field_.GetCellKind(pos);
+    return field_.GetTileKind(pos);
 }
 
 int Tetris::GetClearedLineCount() const
@@ -515,7 +515,7 @@ bool Tetris::IsDebugMode() const
 
 void Tetris::SetTetrominoKind(int kind)
 {
-    if (!IsSolidCell(kind))
+    if (!IsSolidTile(kind))
         return;
 
     Tetromino test = tetromino_;
@@ -558,9 +558,9 @@ Point Tetris::GetTetrominoPos() const
     return tetromino_.pos;
 }
 
-void Tetris::SetFieldCellKind(Point pos, int kind)
+void Tetris::SetFieldTileKind(Point pos, int kind)
 {
-    return field_.SetCellKind(pos, kind);
+    return field_.SetTileKind(pos, kind);
 }
 
 int Tetris::GetLockDelayTimer() const
@@ -660,7 +660,7 @@ void Tetris::add_log(int move)
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         char line[11] = {'\0'};
         for (int x = 0; x < FIELD_WIDTH; x++) {
-            const int kind = GetFieldCellKind(Point(x, FIELD_HEIGHT - y - 1));
+            const int kind = GetFieldTileKind(Point(x, FIELD_HEIGHT - y - 1));
             char ch;
             switch (kind) {
             case E: ch = '.'; break;

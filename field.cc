@@ -40,7 +40,7 @@ bool Field::IsEmpty() const
         == lines_.end();
 }
 
-int Field::GetCellKind(Point pos) const
+int Field::GetTileKind(Point pos) const
 {
     if (is_inside_hole(pos))
         return E;
@@ -51,15 +51,15 @@ int Field::GetCellKind(Point pos) const
     return lines_[pos.y][pos.x];
 }
 
-void Field::SetCellKind(Point pos, int kind)
+void Field::SetTileKind(Point pos, int kind)
 {
     const int x = pos.x, y = pos.y;
 
-    AddLog("SetCellKind(): kind: %d, x: %d, y: %d", kind, pos.x, pos.y);
-    TET_ASSERT(IsEmptyCell(lines_[y][x]));
+    AddLog("Field::SetTileKind(): kind: %d, x: %d, y: %d", kind, pos.x, pos.y);
+    TET_ASSERT(IsEmptyTile(lines_[y][x]));
     TET_ASSERT(is_inside_field(pos));
 
-    lines_[y].SetCell(x, kind);
+    lines_[y].SetTile(x, kind);
 
     if (lines_[y].IsFilled())
         cleared_line_count_++;
@@ -71,7 +71,7 @@ void Field::SetPiece(const Piece &piece)
         if (is_inside_hole(pos))
             continue;
 
-        SetCellKind(pos, piece.kind);
+        SetTileKind(pos, piece.kind);
     }
 }
 

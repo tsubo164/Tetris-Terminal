@@ -17,9 +17,9 @@ public:
     void Clear();
     bool IsEmpty() const;
 
-    // Cell
-    int GetCellKind(Point pos) const;
-    void SetCellKind(Point pos, int kind);
+    // Tile
+    int GetTileKind(Point pos) const;
+    void SetTileKind(Point pos, int kind);
     void SetPiece(const Piece &piece);
     void SetTopHole(int start_x, int end_x);
 
@@ -41,10 +41,10 @@ private:
         bool IsFilled() const { return tile_count == FIELD_WIDTH; }
         void MarkCleared() { is_cleared = true; }
 
-        void SetCell(int x, int kind)
+        void SetTile(int x, int kind)
         {
-            assert(IsValidCell(kind));
-            assert(IsEmptyCell((*this)[x]));
+            assert(IsValidTile(kind));
+            assert(IsEmptyTile((*this)[x]));
 
             (*this)[x] = kind;
             tile_count++;

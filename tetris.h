@@ -43,7 +43,7 @@ public:
     void UpdateFrame(int move);
 
     // Field
-    int GetFieldCellKind(Point pos) const;
+    int GetFieldTileKind(Point pos) const;
     int GetClearedLineCount() const;
     void GetClearedLines(int *cleared_line_y) const;
     bool IsPerfectClear() const;
@@ -76,7 +76,7 @@ public:
     int GetTetrominoRotation() const;
     void SetTetrominoPos(Point pos);
     Point GetTetrominoPos() const;
-    void SetFieldCellKind(Point pos, int kind);
+    void SetFieldTileKind(Point pos, int kind);
     int GetLockDelayTimer() const;
     int GetResetCounter() const;
 

@@ -114,7 +114,7 @@ void InitializePieces()
 
 Piece GetPiece(int kind, int rotation)
 {
-    assert(IsValidCell(kind));
+    assert(IsValidTile(kind));
     assert(rotation >= 0 && rotation < 4);
 
     return piece_states[kind][rotation];
@@ -127,17 +127,17 @@ Piece GetTcorners(int rotation)
     return piece_states[T_CORNERS][rotation];
 }
 
-bool IsEmptyCell(int kind)
+bool IsEmptyTile(int kind)
 {
     return kind == E;
 }
 
-bool IsSolidCell(int kind)
+bool IsSolidTile(int kind)
 {
     return kind > E && kind < T_CORNERS;
 }
 
-bool IsValidCell(int kind)
+bool IsValidTile(int kind)
 {
-    return IsEmptyCell(kind) || IsSolidCell(kind);
+    return IsEmptyTile(kind) || IsSolidTile(kind);
 }

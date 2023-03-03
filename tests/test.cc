@@ -72,7 +72,7 @@ void setup_field(Tetris &tetris, const Grid &grid)
             }
             else if (kind == O) {
                 // Static piece symbol in grid
-                tetris.SetFieldCellKind(pos, I);
+                tetris.SetFieldTileKind(pos, I);
             }
         }
     }

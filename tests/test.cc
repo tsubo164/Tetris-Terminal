@@ -57,7 +57,7 @@ void find_piece_state(const Piece &piece, int &kind, int &rotation, Point &pos)
 void setup_field(Tetris &tetris, const Grid &grid)
 {
     Piece piece;
-    auto cell = piece.tiles.begin();
+    auto tile = piece.tiles.begin();
     const int HEIGHT = grid.size();
 
     for (int y = 0; y < HEIGHT; y++) {
@@ -67,8 +67,8 @@ void setup_field(Tetris &tetris, const Grid &grid)
 
             if (kind == I) {
                 // Active piece symbol in grid
-                assert(cell != piece.tiles.end());
-                *cell++ = pos;
+                assert(tile != piece.tiles.end());
+                *tile++ = pos;
             }
             else if (kind == O) {
                 // Static piece symbol in grid

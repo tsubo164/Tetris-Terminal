@@ -49,7 +49,7 @@ private:
     void draw_pause() const;
 
     void draw_str(int x, int y, const char *str) const;
-    void draw_cell(int x, int y, int kind, bool is_hollow = false) const;
+    void draw_tile(int x, int y, int kind, bool is_hollow = false) const;
     void draw_blank(int x, int y, bool is_flashing = false) const;
     void draw_text(int x, int y, const char *fmt, ...) const;
 };

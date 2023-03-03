@@ -79,21 +79,21 @@ static void init_piece(int kind, int rotation)
 {
     Piece &piece = piece_states[kind][rotation];
     piece.kind = kind;
-    auto cell_pos = piece.tiles.begin();
+    auto tile = piece.tiles.begin();
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
-            const char cell = piece_data[kind][y][x];
+            const char tile_kind = piece_data[kind][y][x];
 
-            if (cell) {
+            if (tile_kind) {
                 // local := grid(x, invert(y)) - center
                 Point local = Point(x, 4 - y - 1) - Point(1, 2);
                 local = rotate(local, rotation);
 
-                *cell_pos++ = local;
+                *tile++ = local;
             }
 
-            if (cell_pos == piece.tiles.end())
+            if (tile == piece.tiles.end())
                 return;
         }
     }

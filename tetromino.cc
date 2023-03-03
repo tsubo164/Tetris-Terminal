@@ -19,8 +19,8 @@ bool Tetromino::CanFit(const Field &field) const
 {
     const Piece piece = GetPiece(kind, rotation);
 
-    for (auto cell: piece.tiles) {
-        const Point world = pos + cell;
+    for (auto tile: piece.tiles) {
+        const Point world = pos + tile;
         const int kind = field.GetCellKind(world);
 
         if (!IsEmptyCell(kind))

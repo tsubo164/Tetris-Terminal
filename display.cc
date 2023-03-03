@@ -100,7 +100,7 @@ static void initialize_colors()
     assign_color(DEFAULT_COLOR_PAIR, 800, 800, 800);
 }
 
-static const char *get_cell_symbol(int kind)
+static const char *get_tile_symbol(int kind)
 {
     const char *s = ".";
 
@@ -173,21 +173,21 @@ void Display::draw_borders() const
 {
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         // Side borders
-        draw_cell(-1, y, B);
-        draw_cell(FIELD_WIDTH, y, B);
+        draw_tile(-1, y, B);
+        draw_tile(FIELD_WIDTH, y, B);
     }
     for (int x = -1; x < FIELD_WIDTH + 1; x++) {
         {
             // Bottom border
             const int y = -1;
             const int kind = tetris_.GetFieldCellKind(Point(x, y));
-            draw_cell(x, y, kind);
+            draw_tile(x, y, kind);
         }
         {
             // Top border
             const int y = FIELD_HEIGHT;
             const int kind = tetris_.GetFieldCellKind(Point(x, y));
-            draw_cell(x, y, kind);
+            draw_tile(x, y, kind);
         }
     }
 }
@@ -198,7 +198,7 @@ void Display::draw_field() const
     for (int y = 0; y < FIELD_HEIGHT; y++) {
         for (int x = 0; x < FIELD_WIDTH; x++) {
             const int kind = tetris_.GetFieldCellKind(Point(x, y));
-            draw_cell(x, y, kind);
+            draw_tile(x, y, kind);
         }
     }
 }
@@ -212,7 +212,7 @@ void Display::draw_ghost() const
         return;
 
     for (auto pos: piece.tiles) {
-        draw_cell(pos.x, pos.y, piece.kind, IS_HOLLOW);
+        draw_tile(pos.x, pos.y, piece.kind, IS_HOLLOW);
     }
 }
 
@@ -230,7 +230,7 @@ void Display::draw_tetromino() const
         return;
 
     for (auto pos: piece.tiles) {
-        draw_cell(pos.x, pos.y, piece.kind);
+        draw_tile(pos.x, pos.y, piece.kind);
     }
 }
 
@@ -249,8 +249,8 @@ void Display::draw_effect()
     int cleared_lines[4] = {0};
     tetris_.GetClearedLines(cleared_lines);
 
-    const int frame_per_cell = duration / 5;
-    const int erase = clearing_timer_ / frame_per_cell;
+    const int frame_per_tile = duration / 5;
+    const int erase = clearing_timer_ / frame_per_tile;
     const bool is_flashing = (clear_count == 4) && (clearing_timer_ % 2 == 0);
 
     // Clear animation
@@ -318,7 +318,7 @@ void Display::draw_info() const
                     continue;
 
                 for (const auto &pos: next.tiles) {
-                    draw_cell(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
+                    draw_tile(x + pos.x + 1, y + pos.y - 2 - i * 3, next.kind);
                 }
             }
         }
@@ -333,7 +333,7 @@ void Display::draw_info() const
             if (!IsEmptyCell(hold.kind) && tetris_.IsHoldEnable()) {
                 const bool is_hollow = !tetris_.IsHoldAvailable();
                 for (const auto &pos: hold.tiles) {
-                    draw_cell(x + pos.x + 1, y + pos.y - 2, hold.kind, is_hollow);
+                    draw_tile(x + pos.x + 1, y + pos.y - 2, hold.kind, is_hollow);
                 }
             }
         }
@@ -554,7 +554,7 @@ void Display::draw_str(int x, int y, const char *str) const
     mvprintw(SCREEN_HEIGHT - Y - 1, X, str);
 }
 
-void Display::draw_cell(int x, int y, int kind, bool is_hollow) const
+void Display::draw_tile(int x, int y, int kind, bool is_hollow) const
 {
     if (IsEmptyCell(kind) && !tetris_.IsDebugMode())
         return;
@@ -564,7 +564,7 @@ void Display::draw_cell(int x, int y, int kind, bool is_hollow) const
     else
         attrset(COLOR_PAIR(DEFAULT_COLOR_PAIR));
 
-    const char *sym = get_cell_symbol(is_hollow ? -1 : kind);
+    const char *sym = get_tile_symbol(is_hollow ? -1 : kind);
     draw_str(x, y, sym);
 
     attrset(0);

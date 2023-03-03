@@ -32,13 +32,13 @@ private:
     struct Line {
         std::array<int8_t, FIELD_WIDTH> elem {0};
         bool is_cleared = false;
-        int8_t cell_count = 0;
+        int8_t tile_count = 0;
 
         Line () {}
         const int8_t operator[](int i) const { return elem[i]; }
         int8_t &operator[](int i) { return elem[i]; }
 
-        bool IsFilled() const { return cell_count == FIELD_WIDTH; }
+        bool IsFilled() const { return tile_count == FIELD_WIDTH; }
         void MarkCleared() { is_cleared = true; }
 
         void SetCell(int x, int kind)
@@ -47,7 +47,7 @@ private:
             assert(IsEmptyCell((*this)[x]));
 
             (*this)[x] = kind;
-            cell_count++;
+            tile_count++;
 
             if (IsFilled())
                 MarkCleared();
